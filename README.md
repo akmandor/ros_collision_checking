@@ -14,19 +14,20 @@ The binaries FCL 5.0 should be already installed on ros kinetic, but we can't us
 >> -DENABLE_DOUBLE_PRECISION=ON
 
 ### LIBCCD
-1. git clone clone https://github.com/danfis/libccd.git
-2. mkdir build && cd build
-3. cmake -G "Unix Makefiles" -DENABLE_DOUBLE_PRECISION=ON ..
-4. make
-5. sudo make install
+1. $ `git clone https://github.com/danfis/libccd.git`
+2. $ `cd libcdd`
+3. $ `mkdir build && cd build`
+4. $ `cmake -G "Unix Makefiles" -DENABLE_DOUBLE_PRECISION=ON ..`
+5. $ `make`
+6. $ `sudo make install`
 
 ## FCL
-1. git clone https://github.com/flexible-collision-library/fcl.git
-2. mkdir build
-3. cd build
-4. cmake ..
-5. make
-6. sudo make install
+1. $ `git clone https://github.com/flexible-collision-library/fcl.git`
+2. $ `cd fcl`
+3. $ `mkdir build && cd build`
+4. $ `cmake ..`
+5. $ `make`
+6. $ `sudo make install`
 
 ### finding
 The FindFCL.cmake should find the installed FCL (which overrides version 5.0).
@@ -34,7 +35,7 @@ If there are errors suchs as constants not found probably it's still using the
 older version of FCL. Lastly, none of the examples from FCL homepage will work as they now require a templating argument. 
 
 ### Installation
-1. This package compiles with catkin build
+1. This package compiles with: $ `catkin build`
 
 ### To do
 1. Add interface for mesh type objects
@@ -73,17 +74,3 @@ older version of FCL. Lastly, none of the examples from FCL homepage will work a
     std::cout<<" Closest Points on sphere p1 = ["<<p1 ( 0 ) <<", "<<p1 ( 1 ) <<", "<<p1 ( 2 ) <<"]"<<std::endl;
     std::cout<<"                on box    p2 = ["<<p2 ( 0 ) <<", "<<p2 ( 1 ) <<", "<<p2 ( 2 ) <<"]"<<std::endl;
 ```
-
-
-
-
-
-
-
-
-
-
-
-
-
-
