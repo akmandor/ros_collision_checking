@@ -1,88 +1,112 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.5)
 project(robot_collision_checking)
 
-set(CMAKE_CXX_STANDARD 14)
+# Default to C99
+if(NOT CMAKE_C_STANDARD)
+  set(CMAKE_C_STANDARD 99)
+endif()
 
-find_package(catkin REQUIRED COMPONENTS
-  roscpp
-  rospy
-  roslib
-  eigen_conversions
-  geometric_shapes
-  octomap_msgs
-  costmap_2d
-)
+# Default to C++14
+if(NOT CMAKE_CXX_STANDARD)
+  set(CMAKE_CXX_STANDARD 14)
+endif()
 
-set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/cmake/")
+if(CMAKE_COMPILER_IS_GNUCXX OR CMAKE_CXX_COMPILER_ID MATCHES "Clang")
+  add_compile_options(-Wall -Wextra -Wpedantic)
+endif()
 
+# find dependencies
+find_package(ament_cmake REQUIRED)
+find_package(rclcpp REQUIRED)
+find_package(rclpy REQUIRED)
+
+find_package(geometry_msgs REQUIRED)
+find_package(geometric_shapes REQUIRED)
+find_package(nav2_costmap_2d REQUIRED)
+find_package(nav2_voxel_grid REQUIRED)
+find_package(octomap_msgs REQUIRED)
+find_package(shape_msgs REQUIRED)
+find_package(std_msgs REQUIRED)
+find_package(visualization_msgs REQUIRED)
+
+## System dependencies are found with CMake's conventions
 find_package(CCD REQUIRED)
+find_package(FCL REQUIRED)
 find_package(Eigen3 REQUIRED)
 find_package(octomap REQUIRED)
+add_definitions(-DOCTOMAP_NODEBUGOUT)
 
-if(EXISTS "${CMAKE_SOURCE_DIR}/cmake/FindFCL.cmake")
-  find_package(FCL REQUIRED)
-else()
-  set(CMAKE_MODULE_PATH "${CMAKE_SOURCE_DIR}/${PROJECT_NAME}/cmake/")
-  find_package(FCL REQUIRED)
-endif()
-
-find_library(EIGEN_CDDLIB_LIB eigen-cddlib)
-
-###########
-## Build ##
-###########
-catkin_package(
-  INCLUDE_DIRS include
-  LIBRARIES fcl_interface
-  CATKIN_DEPENDS roscpp rospy roslib std_msgs shape_msgs geometry_msgs geometric_shapes octomap_msgs costmap_2d
-  DEPENDS Eigen3 CCD FCL
-)
-
-include(CheckCXXCompilerFlag)
-CHECK_CXX_COMPILER_FLAG("-std=c++11" COMPILER_SUPPORTS_CXX11)
-CHECK_CXX_COMPILER_FLAG("-std=c++0x" COMPILER_SUPPORTS_CXX0X)
-if(COMPILER_SUPPORTS_CXX11)
-    set(CMAKE_CXX_FLAGS "-std=c++11")
-elseif(COMPILER_SUPPORTS_CXX0X)
-    set(CMAKE_CXX_FLAGS "-std=c++0x")
-else()
-    message(FATAL_ERROR "The compiler ${CMAKE_CXX_COMPILER} has no C++11 support. Please use a different C++ compiler. Suggested solution: update the pkg build-essential ")
-endif()
+### Libraries and executables ###
 
 include_directories(
   include
-  ${catkin_INCLUDE_DIRS}
   ${Eigen3_INCLUDE_DIRS}
   ${FCL_INCLUDE_DIRS}
   ${CCD_INCLUDE_DIRS}
   ${OCTOMAP_INCLUDE_DIRS}
 )
 
-add_library(fcl_interface
+set(dependencies
+  rclcpp
+  rclpy
+  geometry_msgs
+  geometric_shapes
+  nav2_costmap_2d
+  nav2_voxel_grid
+  octomap_msgs
+  shape_msgs
+  std_msgs
+  tf2
+  tf2_ros
+  tf2_geometry_msgs
+  visualization_msgs
+)
+
+add_library(fcl_interface SHARED
   src/fcl_interface.cpp
-  src/static_fcl_interface.cpp
-  include/${PROJECT_NAME}/fcl_interface.h
 )
-add_dependencies(fcl_interface
-  ${${PROJECT_NAME}_EXPORTED_TARGETS}
-  ${catkin_EXPORTED_TARGETS}
-)
-target_link_libraries(fcl_interface 
-  ${catkin_LIBRARIES}
+target_link_libraries(fcl_interface
   ${Eigen3_LIBRARIES}
   ${FCL_LIBRARIES}
   ${CCD_LIBRARIES}
   ${OCTOMAP_LIBRARIES}
 )
-
-add_executable(test_file tests/test_file.cpp)
-add_dependencies(test_file ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_file 
-  fcl_interface
+ament_target_dependencies(fcl_interface
+  ${dependencies}
 )
 
-add_executable(test_inter_fcl tests/test_inter_fcl.cpp)
-add_dependencies(test_inter_fcl ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(test_inter_fcl 
-  fcl_interface
+### Install ###
+
+install(TARGETS fcl_interface
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
 )
+
+install(DIRECTORY include/
+  DESTINATION include/
+)
+
+### Testing ###
+
+if(BUILD_TESTING)
+  find_package(ament_cmake_gtest REQUIRED)
+  # FCL interface test
+  ament_add_gtest(interface_test test/interface_test.cpp)
+  target_include_directories(interface_test PUBLIC
+    $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    $<INSTALL_INTERFACE:include>
+  )
+  ament_target_dependencies(interface_test
+    ${dependencies}
+  )
+  target_link_libraries(interface_test fcl_interface)
+endif()
+
+### Ament stuff ###
+
+ament_export_include_directories(include)
+ament_export_libraries(fcl_interface)
+ament_export_dependencies(${dependencies})
+
+ament_package()
