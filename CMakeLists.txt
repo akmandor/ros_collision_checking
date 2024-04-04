@@ -31,7 +31,13 @@ find_package(visualization_msgs REQUIRED)
 
 ## System dependencies are found with CMake's conventions
 find_package(CCD REQUIRED)
-find_package(FCL REQUIRED)
+find_package(FCL 0.7.0 REQUIRED)
+if(FCL_VERSION VERSION_LESS "0.7.0")
+  message(WARNING "Your FCL version ${FCL_VERSION} is less than 0.7.0")
+else()
+  message("FCL version ${FCL_VERSION} is good!")
+endif()
+
 find_package(Eigen3 REQUIRED)
 find_package(octomap REQUIRED)
 add_definitions(-DOCTOMAP_NODEBUGOUT)

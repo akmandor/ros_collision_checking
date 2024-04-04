@@ -125,13 +125,13 @@ namespace robot_collision_checking
 
     bool FCLInterface::addCollisionObjects(const std::vector<FCLObjectPtr>& objects, const std::vector<int>& object_ids)
     {
-        int num_objects = objects.size();
         // Check same number of objects and IDs
-        if (num_objects != object_ids.size())
+        if (objects.size() != object_ids.size())
         {
             return false;
         }
 
+        int num_objects = objects.size();
         for (int i = 0; i < num_objects; i++)
         {
             addCollisionObject(objects[i], object_ids[i]);
@@ -290,7 +290,6 @@ namespace robot_collision_checking
         fcl::CollisionRequestd col_req;
         fcl::CollisionResultd col_result;
         int num_contacts(0);
-        int num_objects = world.size();
         for (const auto& other : world)
         {
             if (checkCollisionObjects(obj, other))

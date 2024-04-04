@@ -1,7 +1,6 @@
 #ifndef FCL_INTERFACE_HPP
 #define FCL_INTERFACE_HPP
 
-
 #include <string>
 #include <vector>
 
