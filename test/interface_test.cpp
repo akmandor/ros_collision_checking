@@ -183,14 +183,14 @@ TEST(FCLInterface, AddRemoveVoxelGrid)
     eig_wTs.translation() = eig_wps;
 
     // VoxelGrid
-    unsigned int size_x = 5, size_y = 2, size_z = 15;
+    int size_x = 5, size_y = 2, size_z = 15;
     nav2_voxel_grid::VoxelGrid vg(size_x, size_y, size_z);
     // Mark all cells
-    for (uint32_t x_grid = 0; x_grid < size_x; ++x_grid)
+    for (int x_grid = 0; x_grid < size_x; ++x_grid)
     {
-        for (uint32_t y_grid = 0; y_grid < size_y; ++y_grid)
+        for (int y_grid = 0; y_grid < size_y; ++y_grid)
         {
-            for (uint32_t z_grid = 0; z_grid < size_z; ++z_grid)
+            for (int z_grid = 0; z_grid < size_z; ++z_grid)
             {
                 vg.markVoxel(x_grid, y_grid, z_grid);
             }
@@ -202,7 +202,7 @@ TEST(FCLInterface, AddRemoveVoxelGrid)
     grid_msg.size_y = size_y;
     grid_msg.size_z = size_z;
     grid_msg.data.resize(size_x * size_y);
-    memcpy(&grid_msg.data[0], vg.getData(), size_x * size_y * sizeof(unsigned int));
+    memcpy(&grid_msg.data[0], vg.getData(), size_x * size_y * sizeof(int));
 
     robot_collision_checking::FCLObjectPtr fcl_voxel_grid = std::make_shared<robot_collision_checking::FCLObject>(
         grid_msg, robot_collision_checking::VOXEL_GRID, eig_wTs);
@@ -337,8 +337,10 @@ TEST(FCLInterface, CollisionCheck)
 
     std::vector<int> collision_object_ids;
     is_collision = fcl_interface.checkCollisionObject(fcl_sphere2, collision_object_ids);
+    int total_fcl_collisions = collision_object_ids.size();
+
     ASSERT_TRUE(is_collision);
-    ASSERT_EQ(total_collisions, collision_object_ids.size());
+    ASSERT_EQ(total_collisions, total_fcl_collisions);
 
     // Check collisions in a newly created world of FCL objects
     std::vector<robot_collision_checking::FCLObjectPtr> fcl_world;
@@ -474,6 +476,59 @@ TEST(FCLInterface, DistanceCheck)
     fcl_interface.getObjectDistances(fcl_sphere1, fcl_interface_distances, closest_pt_obj, closest_pt_world);
 
     EXPECT_EQ(distances, fcl_interface_distances);
+}
+
+TEST(FCLInterface, OctomapCollDistCheck)
+{
+    robot_collision_checking::FCLInterface fcl_interface;
+
+    // Origin
+    Eigen::Vector3d eig_wps(0.0, 0.0, 0.0);
+    Eigen::Affine3d eig_wTs;
+    eig_wTs.linear() = Eigen::Matrix3d::Identity();
+    eig_wTs.translation() = eig_wps;
+
+    // Create shape_msgs geometries
+    shape_msgs::msg::SolidPrimitive sphere;
+    sphere.dimensions.resize(1);
+    sphere.dimensions[shape_msgs::msg::SolidPrimitive::SPHERE_RADIUS] = 0.3;
+    sphere.type = shape_msgs::msg::SolidPrimitive::SPHERE;
+
+    robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(
+        sphere, robot_collision_checking::SPHERE, eig_wTs);
+
+    // Octomap
+    octomap_msgs::msg::Octomap octomap;
+    octomap::OcTree octree(0.1);
+    // Insert some example points into the octree
+    octomap::point3d point1(0.0, 0.0, 0.0);
+    octomap::point3d point2(1.0, 1.0, 1.0);
+    octree.updateNode(point1, true);
+    octree.updateNode(point2, true);
+    // Convert the octree to octomap binary format
+    octomap_msgs::binaryMapToMsg(octree, octomap);
+    robot_collision_checking::FCLObjectPtr fcl_octomap = std::make_shared<robot_collision_checking::FCLObject>(
+        octomap, robot_collision_checking::OCTOMAP, eig_wTs);
+
+    // Check in collision
+    bool is_collision = fcl_interface.checkCollisionObjects(fcl_sphere, fcl_octomap);
+    ASSERT_TRUE(is_collision);
+
+    // If two objects are in collision, min_distance <= 0.
+    double dist = fcl_interface.getDistanceObjects(fcl_sphere, fcl_octomap);
+    ASSERT_LE(dist, 0);
+
+    Eigen::Vector3d eig_wps_new(2.0, 2.0, 2.0);
+    Eigen::Affine3d eig_wTs_new;
+    eig_wTs_new.linear() = Eigen::Matrix3d::Identity();
+    eig_wTs_new.translation() = eig_wps_new;
+
+    robot_collision_checking::FCLObjectPtr fcl_sphere_new = std::make_shared<robot_collision_checking::FCLObject>(
+        sphere, robot_collision_checking::SPHERE, eig_wTs_new);
+
+    // Successfully compute distance between Octomap and shape_msgs type
+    double new_dist = fcl_interface.getDistanceObjects(fcl_sphere_new, fcl_octomap);
+    ASSERT_GT(new_dist, 0.0);
 }
 
 int main(int argc, char **argv)
