@@ -1,0 +1,20 @@
+name: "Foxy Source Build"
+on:
+  pull_request:
+  push:
+    branches:
+      - foxy
+
+jobs:
+  foxy_build:
+    runs-on: ubuntu-20.04
+    steps:
+      - uses: ros-tooling/setup-ros@v0.7
+        with:
+          required-ros-distributions: foxy
+      - uses: ros-tooling/action-ros-ci@v0.3
+        with:
+          package-name: robot_collision_checking
+          ref: foxy
+          target-ros2-distro: foxy
+          vcs-repo-file-url: https://raw.githubusercontent.com/ros2/ros2/foxy/ros2.repos
