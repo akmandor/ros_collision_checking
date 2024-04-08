@@ -18,12 +18,8 @@
 
 #include <robot_collision_checking/fcl_interface.hpp>
 
-static constexpr double EPSILON = std::numeric_limits<float>::epsilon();
-
 TEST(FCLInterface, TransformToFCL)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
-
     // Create some Eigen transforms in the world frame
     Eigen::Vector3d eig_wps1(0.0, 0.0, 0.0), eig_wps2(-1.3, 2.0, 0.3);
     Eigen::Matrix3d eig_identity = Eigen::Matrix3d::Identity();
@@ -35,8 +31,8 @@ TEST(FCLInterface, TransformToFCL)
     eig_wTs2.translation() = eig_wps2;
 
     fcl::Transform3d fcl_wTs1, fcl_wTs2;
-    fcl_interface.transform2fcl(eig_wTs1, fcl_wTs1);
-    fcl_interface.transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
 
     ASSERT_TRUE(fcl_wTs1.translation().isApprox(eig_wTs1.translation()));
     ASSERT_TRUE(fcl_wTs2.translation().isApprox(eig_wTs2.translation()));
@@ -46,7 +42,7 @@ TEST(FCLInterface, TransformToFCL)
 
 TEST(FCLInterface, AddRemove)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
+    robot_collision_checking::FCLInterfaceCollisionWorld collision_world;
 
     // Origin
     Eigen::Vector3d eig_wps(0.0, 0.0, 0.0);
@@ -62,9 +58,9 @@ TEST(FCLInterface, AddRemove)
 
     robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(
         sphere, robot_collision_checking::SPHERE, eig_wTs);
-    bool success = fcl_interface.addCollisionObject(fcl_sphere, 0);
+    bool success = collision_world.addCollisionObject(fcl_sphere, 0);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 1);
+    ASSERT_EQ(collision_world.getNumObjects(), 1);
     ASSERT_TRUE(success);
 
     // Attempt to add another object with the same ID
@@ -77,21 +73,21 @@ TEST(FCLInterface, AddRemove)
     robot_collision_checking::FCLObjectPtr fcl_box = std::make_shared<robot_collision_checking::FCLObject>(
         box, robot_collision_checking::BOX, eig_wTs);
 
-    success = fcl_interface.addCollisionObject(fcl_box, 0);
+    success = collision_world.addCollisionObject(fcl_box, 0);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 1);
+    ASSERT_EQ(collision_world.getNumObjects(), 1);
     ASSERT_FALSE(success);
 
     // Add box with a new ID
-    success = fcl_interface.addCollisionObject(fcl_box, 1);
+    success = collision_world.addCollisionObject(fcl_box, 1);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 2);
+    ASSERT_EQ(collision_world.getNumObjects(), 2);
     ASSERT_TRUE(success);
 
     // Remove sphere
-    success = fcl_interface.removeCollisionObject(0);
+    success = collision_world.removeCollisionObject(0);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 1);
+    ASSERT_EQ(collision_world.getNumObjects(), 1);
     ASSERT_TRUE(success);
 
     // Add a collection of objects
@@ -109,40 +105,52 @@ TEST(FCLInterface, AddRemove)
 
     // Plane
     shape_msgs::msg::Plane plane;
-    plane.coef[0] = 1.0;
-    plane.coef[1] = 0.0;
+    plane.coef[0] = 0.2;
+    plane.coef[1] = 0.4;
     plane.coef[2] = 0.0;
-    plane.coef[3] = 0.0;
+    // D takes this value to satisfy Ax+By+D=0
+    plane.coef[3] = -(plane.coef[0] * plane.coef[0] + plane.coef[1] * plane.coef[1]);
+    // The coefficients A, B, C give the normal to the plane
+    Eigen::Vector3d n(plane.coef[0], plane.coef[1], plane.coef[2]);
+    // Plane is centered at this point
+    double distance = plane.coef[3] / n.norm();
+    Eigen::Affine3d plane_pose;
+    plane_pose.translation() = -distance * n.normalized();
+    // Calculate the rotation matrix from the original normal z_0 = (0,0,1) to new normal n = (A,B,C)
+    Eigen::Vector3d z_0 = Eigen::Vector3d::UnitZ();
+    Eigen::Quaterniond q = Eigen::Quaterniond::FromTwoVectors(z_0, n);
+    plane_pose.linear() = q.toRotationMatrix();
     fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(
-        plane, robot_collision_checking::PLANE, eig_wTs));
+        plane, robot_collision_checking::PLANE, plane_pose));
 
     // Mesh
     shape_msgs::msg::Mesh mesh;
-    // Mesh vertices
-    std::vector<geometry_msgs::msg::Point> vertices;
-    geometry_msgs::msg::Point vertex1, vertex2, vertex3;
-    vertex1.x = 0.0;
-    vertex1.y = 0.0;
-    vertex1.z = 0.0;
-    vertex2.x = 1.0;
-    vertex2.y = 0.0;
-    vertex2.z = 0.0;
-    vertex3.x = 0.0;
-    vertex3.y = 1.0;
-    vertex3.z = 0.0;
-    vertices.push_back(vertex1);
-    vertices.push_back(vertex2);
-    vertices.push_back(vertex3);
-    // Mesh triangles
-    std::vector<shape_msgs::msg::MeshTriangle> triangles;
-    shape_msgs::msg::MeshTriangle triangle1, triangle2;
-    triangle1.vertex_indices = {0, 1, 2};
-    triangle2.vertex_indices = {1, 2, 0};
-    triangles.push_back(triangle1);
-    triangles.push_back(triangle2);
-    // Assign vertices and triangles to the mesh
-    mesh.vertices = vertices;
-    mesh.triangles = triangles;
+    // Define vertices of the mesh
+    geometry_msgs::msg::Point p1, p2, p3, p4, p5;
+    p1.x = 0.0; p1.y = 0.0; p1.z = 1.0;   // Apex of the pyramid
+    p2.x = 1.0; p2.y = 0.0; p2.z = 0.0;   // Base vertex 1
+    p3.x = -1.0; p3.y = 0.0; p3.z = 0.0;  // Base vertex 2
+    p4.x = 0.0; p4.y = 1.0; p4.z = 0.0;   // Base vertex 3
+    p5.x = 0.0; p5.y = -1.0; p5.z = 0.0;  // Base vertex 4
+    mesh.vertices.push_back(p1);
+    mesh.vertices.push_back(p2);
+    mesh.vertices.push_back(p3);
+    mesh.vertices.push_back(p4);
+    mesh.vertices.push_back(p5);
+    // Define the faces of the mesh
+    shape_msgs::msg::MeshTriangle t1, t2, t3, t4, t5, t6;
+    t1.vertex_indices = {0, 1, 2};
+    t2.vertex_indices = {0, 1, 3};
+    t3.vertex_indices = {0, 2, 3};
+    t4.vertex_indices = {0, 3, 4};
+    t5.vertex_indices = {1, 2, 4}; 
+    t6.vertex_indices = {1, 3, 4};  
+    mesh.triangles.push_back(t1);
+    mesh.triangles.push_back(t2);
+    mesh.triangles.push_back(t3);
+    mesh.triangles.push_back(t4);
+    mesh.triangles.push_back(t5);
+    mesh.triangles.push_back(t6);
     fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(
         mesh, robot_collision_checking::MESH, eig_wTs));
 
@@ -160,21 +168,21 @@ TEST(FCLInterface, AddRemove)
         octomap, robot_collision_checking::OCTOMAP, eig_wTs));
 
     // Add objects
-    success = fcl_interface.addCollisionObjects(fcl_objects, object_ids);
+    success = collision_world.addCollisionObjects(fcl_objects, object_ids);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 5);
+    ASSERT_EQ(collision_world.getNumObjects(), 5);
     ASSERT_TRUE(success);
 
     // Remove objects
-    success = fcl_interface.removeCollisionObjects(object_ids);
+    success = collision_world.removeCollisionObjects(object_ids);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), 1);
+    ASSERT_EQ(collision_world.getNumObjects(), 1);
     ASSERT_TRUE(success);
 }
 
 TEST(FCLInterface, AddRemoveVoxelGrid)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
+    robot_collision_checking::FCLInterfaceCollisionWorld collision_world;
 
     // Origin
     Eigen::Vector3d eig_wps(0.0, 0.0, 0.0);
@@ -207,16 +215,14 @@ TEST(FCLInterface, AddRemoveVoxelGrid)
     robot_collision_checking::FCLObjectPtr fcl_voxel_grid = std::make_shared<robot_collision_checking::FCLObject>(
         grid_msg, robot_collision_checking::VOXEL_GRID, eig_wTs);
 
-    bool success = fcl_interface.addCollisionObject(fcl_voxel_grid, 0);
+    bool success = collision_world.addCollisionObject(fcl_voxel_grid, 0);
 
-    ASSERT_EQ(fcl_interface.getNumObjects(), size_x * size_y * size_z);
+    ASSERT_EQ(collision_world.getNumObjects(), size_x * size_y * size_z);
     ASSERT_TRUE(success);
 }
 
 TEST(FCLInterface, CollisionCheck)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
-
     // Create some Eigen transforms in the world frame
     Eigen::Vector3d eig_wps1(0.0, 0.0, 0.0), eig_wps2(-1.3, 2.0, 0.3), eig_wps3(2.0, 0.5, 0.0), eig_wps4(-1.4, 1.9, 0.35), eig_wps5(-1.2, 2.1, 0.2);
     Eigen::Matrix3d eig_identity = Eigen::Matrix3d::Identity();
@@ -241,11 +247,11 @@ TEST(FCLInterface, CollisionCheck)
     
     // Convert to FCL coordinates
     fcl::Transform3d fcl_wTs1, fcl_wTs2, fcl_wTs3, fcl_wTs4, fcl_wTs5;
-    fcl_interface.transform2fcl(eig_wTs1, fcl_wTs1);
-    fcl_interface.transform2fcl(eig_wTs2, fcl_wTs2);
-    fcl_interface.transform2fcl(eig_wTs3, fcl_wTs3);
-    fcl_interface.transform2fcl(eig_wTs4, fcl_wTs4);
-    fcl_interface.transform2fcl(eig_wTs5, fcl_wTs5);
+    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::transform2fcl(eig_wTs3, fcl_wTs3);
+    robot_collision_checking::transform2fcl(eig_wTs4, fcl_wTs4);
+    robot_collision_checking::transform2fcl(eig_wTs5, fcl_wTs5);
 
     // Create some primitive collision geometries
     std::shared_ptr<fcl::CollisionGeometryd> cg1 = std::make_shared<fcl::Sphered>(0.3);
@@ -310,54 +316,55 @@ TEST(FCLInterface, CollisionCheck)
     int total_collisions = 0;
 
     fcl::collide(o2, o1, request, result);
-    bool is_collision = fcl_interface.checkCollisionObjects(fcl_sphere2, fcl_sphere1);
+    bool is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_sphere1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o3, request, result);
-    is_collision = fcl_interface.checkCollisionObjects(fcl_sphere2, fcl_box1);
+    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_box1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o4, request, result);
-    is_collision = fcl_interface.checkCollisionObjects(fcl_sphere2, fcl_cylinder1);
+    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_cylinder1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o5, request, result);
-    is_collision = fcl_interface.checkCollisionObjects(fcl_sphere2, fcl_box2);
+    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_box2);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     // Check collisions in our world
-    fcl_interface.addCollisionObject(fcl_sphere1, 0);
-    fcl_interface.addCollisionObject(fcl_box1, 1);
-    fcl_interface.addCollisionObject(fcl_cylinder1, 2);
-    fcl_interface.addCollisionObject(fcl_box2, 3);
+    robot_collision_checking::FCLInterfaceCollisionWorld collision_world;
+
+    collision_world.addCollisionObject(fcl_sphere1, 0);
+    collision_world.addCollisionObject(fcl_box1, 1);
+    collision_world.addCollisionObject(fcl_cylinder1, 2);
+    collision_world.addCollisionObject(fcl_box2, 3);
 
     std::vector<int> collision_object_ids;
-    is_collision = fcl_interface.checkCollisionObject(fcl_sphere2, collision_object_ids);
+    is_collision = collision_world.checkCollisionObject(fcl_sphere2, collision_object_ids);
     int total_fcl_collisions = collision_object_ids.size();
 
     ASSERT_TRUE(is_collision);
     ASSERT_EQ(total_collisions, total_fcl_collisions);
 
-    // Check collisions in a newly created world of FCL objects
-    std::vector<robot_collision_checking::FCLObjectPtr> fcl_world;
-    fcl_world.push_back(fcl_sphere1);
-    fcl_world.push_back(fcl_box1);
-    fcl_world.push_back(fcl_cylinder1);
-    fcl_world.push_back(fcl_box2);
+    // Check against existing object with ID 0
+    is_collision = collision_world.checkCollisionObject(0, collision_object_ids);
+    total_fcl_collisions = collision_object_ids.size();
 
-    int num_contacts = fcl_interface.checkCollisionObjectWorld(fcl_sphere2, fcl_world);
+    ASSERT_FALSE(is_collision);
+    ASSERT_EQ(0, total_fcl_collisions);
+
+    // Check collisions in a given world of FCL objects
+    int num_contacts = robot_collision_checking::checkCollisionObjectWorld(fcl_sphere2, collision_world);
     ASSERT_GT(num_contacts, 0);
     ASSERT_EQ(total_collisions, num_contacts);
 }
 
 TEST(FCLInterface, DistanceCheck)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
-
     // Create some Eigen transforms in the world frame
     Eigen::Vector3d eig_wps1(0.0, 0.0, 0.0), eig_wps2(-1.3, 2.0, 0.3), eig_wps3(2.0, 0.5, 0.0), eig_wps4(-1.4, 1.9, 0.35), eig_wps5(-1.2, 2.1, 0.2);
     Eigen::Matrix3d eig_identity = Eigen::Matrix3d::Identity();
@@ -382,11 +389,11 @@ TEST(FCLInterface, DistanceCheck)
     
     // Convert to FCL coordinates
     fcl::Transform3d fcl_wTs1, fcl_wTs2, fcl_wTs3, fcl_wTs4, fcl_wTs5;
-    fcl_interface.transform2fcl(eig_wTs1, fcl_wTs1);
-    fcl_interface.transform2fcl(eig_wTs2, fcl_wTs2);
-    fcl_interface.transform2fcl(eig_wTs3, fcl_wTs3);
-    fcl_interface.transform2fcl(eig_wTs4, fcl_wTs4);
-    fcl_interface.transform2fcl(eig_wTs5, fcl_wTs5);
+    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::transform2fcl(eig_wTs3, fcl_wTs3);
+    robot_collision_checking::transform2fcl(eig_wTs4, fcl_wTs4);
+    robot_collision_checking::transform2fcl(eig_wTs5, fcl_wTs5);
 
     // Create some primitive collision geometries
     std::shared_ptr<fcl::CollisionGeometryd> cg1 = std::make_shared<fcl::Sphered>(0.3);
@@ -452,7 +459,7 @@ TEST(FCLInterface, DistanceCheck)
     request.gjk_solver_type = fcl::GJKSolverType::GST_LIBCCD;
 
     fcl::distance(o1, o2, request, result);
-    double dist = fcl_interface.getDistanceObjects(fcl_sphere1, fcl_sphere2);
+    double dist = robot_collision_checking::getDistanceObjects(fcl_sphere1, fcl_sphere2);
     ASSERT_DOUBLE_EQ(result.min_distance, dist);
 
     std::vector<double> distances;
@@ -465,23 +472,23 @@ TEST(FCLInterface, DistanceCheck)
     distances.push_back(result3.min_distance);
 
     // Create a world
-    fcl_interface.addCollisionObject(fcl_sphere2, 0);
-    fcl_interface.addCollisionObject(fcl_box1, 1);
-    fcl_interface.addCollisionObject(fcl_cylinder1, 2);
-    fcl_interface.addCollisionObject(fcl_box2, 3);
+    robot_collision_checking::FCLInterfaceCollisionWorld collision_world;
 
-    std::vector<double> fcl_interface_distances;
+    collision_world.addCollisionObject(fcl_sphere2, 0);
+    collision_world.addCollisionObject(fcl_box1, 1);
+    collision_world.addCollisionObject(fcl_cylinder1, 2);
+    collision_world.addCollisionObject(fcl_box2, 3);
+
+    std::vector<double> world_distances;
     std::vector<Eigen::Vector3d> closest_pt_obj;
     std::vector<Eigen::Vector3d> closest_pt_world;
-    fcl_interface.getObjectDistances(fcl_sphere1, fcl_interface_distances, closest_pt_obj, closest_pt_world);
+    collision_world.getObjectDistances(fcl_sphere1, world_distances, closest_pt_obj, closest_pt_world);
 
-    EXPECT_EQ(distances, fcl_interface_distances);
+    EXPECT_EQ(distances, world_distances);
 }
 
 TEST(FCLInterface, OctomapCollDistCheck)
 {
-    robot_collision_checking::FCLInterface fcl_interface;
-
     // Origin
     Eigen::Vector3d eig_wps(0.0, 0.0, 0.0);
     Eigen::Affine3d eig_wTs;
@@ -511,11 +518,11 @@ TEST(FCLInterface, OctomapCollDistCheck)
         octomap, robot_collision_checking::OCTOMAP, eig_wTs);
 
     // Check in collision
-    bool is_collision = fcl_interface.checkCollisionObjects(fcl_sphere, fcl_octomap);
+    bool is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere, fcl_octomap);
     ASSERT_TRUE(is_collision);
 
     // If two objects are in collision, min_distance <= 0.
-    double dist = fcl_interface.getDistanceObjects(fcl_sphere, fcl_octomap);
+    double dist = robot_collision_checking::getDistanceObjects(fcl_sphere, fcl_octomap);
     ASSERT_LE(dist, 0);
 
     Eigen::Vector3d eig_wps_new(2.0, 2.0, 2.0);
@@ -527,7 +534,7 @@ TEST(FCLInterface, OctomapCollDistCheck)
         sphere, robot_collision_checking::SPHERE, eig_wTs_new);
 
     // Successfully compute distance between Octomap and shape_msgs type
-    double new_dist = fcl_interface.getDistanceObjects(fcl_sphere_new, fcl_octomap);
+    double new_dist = robot_collision_checking::getDistanceObjects(fcl_sphere_new, fcl_octomap);
     ASSERT_GT(new_dist, 0.0);
 }
 

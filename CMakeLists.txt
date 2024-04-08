@@ -62,14 +62,12 @@ set(dependencies
   octomap_msgs
   shape_msgs
   std_msgs
-  tf2
-  tf2_ros
-  tf2_geometry_msgs
   visualization_msgs
 )
 
 add_library(fcl_interface SHARED
   src/fcl_interface.cpp
+  src/fcl_interface_collision_world.cpp
 )
 target_link_libraries(fcl_interface
   ${Eigen3_LIBRARIES}
@@ -81,12 +79,26 @@ ament_target_dependencies(fcl_interface
   ${dependencies}
 )
 
+add_executable(fcl_interface_example
+  examples/fcl_interface_example.cpp
+)
+target_link_libraries(fcl_interface_example
+  fcl_interface
+)
+ament_target_dependencies(fcl_interface_example
+  ${dependencies}
+)
+
 ### Install ###
 
 install(TARGETS fcl_interface
   ARCHIVE DESTINATION lib
   LIBRARY DESTINATION lib
   RUNTIME DESTINATION bin
+)
+
+install(TARGETS fcl_interface_example
+  RUNTIME DESTINATION lib/${PROJECT_NAME}
 )
 
 install(DIRECTORY include/
