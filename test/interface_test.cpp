@@ -16,6 +16,8 @@
 #include <nav2_voxel_grid/voxel_grid.hpp>
 #include <nav2_msgs/msg/voxel_grid.hpp>
 
+#include <robot_collision_checking/fcl_interface_types.hpp>
+#include <robot_collision_checking/fcl_interface_collision_world.hpp>
 #include <robot_collision_checking/fcl_interface.hpp>
 
 TEST(FCLInterface, TransformToFCL)
@@ -31,8 +33,8 @@ TEST(FCLInterface, TransformToFCL)
     eig_wTs2.translation() = eig_wps2;
 
     fcl::Transform3d fcl_wTs1, fcl_wTs2;
-    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
-    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs2, fcl_wTs2);
 
     ASSERT_TRUE(fcl_wTs1.translation().isApprox(eig_wTs1.translation()));
     ASSERT_TRUE(fcl_wTs2.translation().isApprox(eig_wTs2.translation()));
@@ -247,11 +249,11 @@ TEST(FCLInterface, CollisionCheck)
     
     // Convert to FCL coordinates
     fcl::Transform3d fcl_wTs1, fcl_wTs2, fcl_wTs3, fcl_wTs4, fcl_wTs5;
-    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
-    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
-    robot_collision_checking::transform2fcl(eig_wTs3, fcl_wTs3);
-    robot_collision_checking::transform2fcl(eig_wTs4, fcl_wTs4);
-    robot_collision_checking::transform2fcl(eig_wTs5, fcl_wTs5);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs3, fcl_wTs3);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs4, fcl_wTs4);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs5, fcl_wTs5);
 
     // Create some primitive collision geometries
     std::shared_ptr<fcl::CollisionGeometryd> cg1 = std::make_shared<fcl::Sphered>(0.3);
@@ -316,22 +318,22 @@ TEST(FCLInterface, CollisionCheck)
     int total_collisions = 0;
 
     fcl::collide(o2, o1, request, result);
-    bool is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_sphere1);
+    bool is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(fcl_sphere2, fcl_sphere1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o3, request, result);
-    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_box1);
+    is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(fcl_sphere2, fcl_box1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o4, request, result);
-    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_cylinder1);
+    is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(fcl_sphere2, fcl_cylinder1);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
     fcl::collide(o2, o5, request, result);
-    is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere2, fcl_box2);
+    is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(fcl_sphere2, fcl_box2);
     total_collisions += is_collision;
     ASSERT_EQ(result.isCollision(), is_collision);
 
@@ -358,7 +360,7 @@ TEST(FCLInterface, CollisionCheck)
     ASSERT_EQ(0, total_fcl_collisions);
 
     // Check collisions in a given world of FCL objects
-    int num_contacts = robot_collision_checking::checkCollisionObjectWorld(fcl_sphere2, collision_world);
+    int num_contacts = robot_collision_checking::fcl_interface::checkCollisionObjectWorld(fcl_sphere2, collision_world);
     ASSERT_GT(num_contacts, 0);
     ASSERT_EQ(total_collisions, num_contacts);
 }
@@ -389,11 +391,11 @@ TEST(FCLInterface, DistanceCheck)
     
     // Convert to FCL coordinates
     fcl::Transform3d fcl_wTs1, fcl_wTs2, fcl_wTs3, fcl_wTs4, fcl_wTs5;
-    robot_collision_checking::transform2fcl(eig_wTs1, fcl_wTs1);
-    robot_collision_checking::transform2fcl(eig_wTs2, fcl_wTs2);
-    robot_collision_checking::transform2fcl(eig_wTs3, fcl_wTs3);
-    robot_collision_checking::transform2fcl(eig_wTs4, fcl_wTs4);
-    robot_collision_checking::transform2fcl(eig_wTs5, fcl_wTs5);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs1, fcl_wTs1);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs2, fcl_wTs2);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs3, fcl_wTs3);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs4, fcl_wTs4);
+    robot_collision_checking::fcl_interface::transform2fcl(eig_wTs5, fcl_wTs5);
 
     // Create some primitive collision geometries
     std::shared_ptr<fcl::CollisionGeometryd> cg1 = std::make_shared<fcl::Sphered>(0.3);
@@ -459,7 +461,7 @@ TEST(FCLInterface, DistanceCheck)
     request.gjk_solver_type = fcl::GJKSolverType::GST_LIBCCD;
 
     fcl::distance(o1, o2, request, result);
-    double dist = robot_collision_checking::getDistanceObjects(fcl_sphere1, fcl_sphere2);
+    double dist = robot_collision_checking::fcl_interface::getDistanceObjects(fcl_sphere1, fcl_sphere2);
     ASSERT_DOUBLE_EQ(result.min_distance, dist);
 
     std::vector<double> distances;
@@ -518,11 +520,11 @@ TEST(FCLInterface, OctomapCollDistCheck)
         octomap, robot_collision_checking::OCTOMAP, eig_wTs);
 
     // Check in collision
-    bool is_collision = robot_collision_checking::checkCollisionObjects(fcl_sphere, fcl_octomap);
+    bool is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(fcl_sphere, fcl_octomap);
     ASSERT_TRUE(is_collision);
 
     // If two objects are in collision, min_distance <= 0.
-    double dist = robot_collision_checking::getDistanceObjects(fcl_sphere, fcl_octomap);
+    double dist = robot_collision_checking::fcl_interface::getDistanceObjects(fcl_sphere, fcl_octomap);
     ASSERT_LE(dist, 0);
 
     Eigen::Vector3d eig_wps_new(2.0, 2.0, 2.0);
@@ -534,7 +536,7 @@ TEST(FCLInterface, OctomapCollDistCheck)
         sphere, robot_collision_checking::SPHERE, eig_wTs_new);
 
     // Successfully compute distance between Octomap and shape_msgs type
-    double new_dist = robot_collision_checking::getDistanceObjects(fcl_sphere_new, fcl_octomap);
+    double new_dist = robot_collision_checking::fcl_interface::getDistanceObjects(fcl_sphere_new, fcl_octomap);
     ASSERT_GT(new_dist, 0.0);
 }
 

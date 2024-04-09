@@ -21,6 +21,8 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
+#include <robot_collision_checking/fcl_interface_types.hpp>
+#include <robot_collision_checking/fcl_interface_collision_world.hpp>
 #include <robot_collision_checking/fcl_interface.hpp>
 
 bool initCollisionWorld(robot_collision_checking::FCLInterfaceCollisionWorld& world)
@@ -189,7 +191,7 @@ int main(int argc, char **argv)
             // Get object pose relative to world_frame
             Eigen::Affine3d object_eig_pose = world_obj->object->object_transform;
             geometry_msgs::msg::Pose object_geo_pose;
-            robot_collision_checking::convertEigenTransformGeometryPose(object_eig_pose, object_geo_pose);
+            robot_collision_checking::fcl_interface::convertEigenTransformGeometryPose(object_eig_pose, object_geo_pose);
             mkr.pose = object_geo_pose;
 
             if (obj_type == "MESH")
