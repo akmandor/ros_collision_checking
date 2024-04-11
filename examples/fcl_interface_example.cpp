@@ -5,6 +5,7 @@
 #include <Eigen/Eigen>
 
 #include <rclcpp/rclcpp.hpp>
+#include <rclcpp/logging.hpp>
 
 #include <geometric_shapes/shape_to_marker.h>
 
@@ -21,9 +22,9 @@
 #include <visualization_msgs/msg/marker.hpp>
 #include <visualization_msgs/msg/marker_array.hpp>
 
-#include <robot_collision_checking/fcl_interface_types.hpp>
-#include <robot_collision_checking/fcl_interface_collision_world.hpp>
-#include <robot_collision_checking/fcl_interface.hpp>
+#include "robot_collision_checking/fcl_interface_types.hpp"
+#include "robot_collision_checking/fcl_interface_collision_world.hpp"
+#include "robot_collision_checking/fcl_interface.hpp"
 
 bool initCollisionWorld(robot_collision_checking::FCLInterfaceCollisionWorld& world)
 {

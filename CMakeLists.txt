@@ -125,6 +125,12 @@ endif()
 
 ament_export_include_directories(include)
 ament_export_libraries(fcl_interface)
-ament_export_dependencies(${dependencies})
+ament_export_dependencies(
+  ${dependencies}
+  CCD
+  FCL
+  Eigen
+  octomap
+)
 
 ament_package()

@@ -16,9 +16,9 @@
 #include <nav2_voxel_grid/voxel_grid.hpp>
 #include <nav2_msgs/msg/voxel_grid.hpp>
 
-#include <robot_collision_checking/fcl_interface_types.hpp>
-#include <robot_collision_checking/fcl_interface_collision_world.hpp>
-#include <robot_collision_checking/fcl_interface.hpp>
+#include "robot_collision_checking/fcl_interface_types.hpp"
+#include "robot_collision_checking/fcl_interface_collision_world.hpp"
+#include "robot_collision_checking/fcl_interface.hpp"
 
 TEST(FCLInterface, TransformToFCL)
 {

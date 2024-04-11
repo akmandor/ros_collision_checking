@@ -1,8 +1,9 @@
 #include <limits> // for numeric_limits
 
 #include <rclcpp/logger.hpp>
+#include <rclcpp/logging.hpp>
 
-#include <robot_collision_checking/fcl_interface.hpp>
+#include "robot_collision_checking/fcl_interface.hpp"
 
 namespace robot_collision_checking
 {

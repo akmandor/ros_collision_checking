@@ -5,7 +5,7 @@
 
 #include <Eigen/Eigen>
 
-#include <robot_collision_checking/fcl_interface_types.hpp>
+#include "robot_collision_checking/fcl_interface_types.hpp"
 
 namespace robot_collision_checking
 {
