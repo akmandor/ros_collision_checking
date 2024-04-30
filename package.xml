@@ -13,6 +13,7 @@
 
   <depend>geometry_msgs</depend>
   <depend>geometric_shapes</depend>
+  <depend>nav2_costmap_2d</depend>
   <depend>nav2_msgs</depend>
   <depend>nav2_voxel_grid</depend>
   <depend>octomap_msgs</depend>
