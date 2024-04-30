@@ -23,6 +23,7 @@ find_package(rclpy REQUIRED)
 find_package(geometry_msgs REQUIRED)
 find_package(geometric_shapes REQUIRED)
 find_package(nav2_costmap_2d REQUIRED)
+find_package(nav2_msgs REQUIRED)
 find_package(nav2_voxel_grid REQUIRED)
 find_package(octomap_msgs REQUIRED)
 find_package(shape_msgs REQUIRED)
@@ -58,6 +59,7 @@ set(dependencies
   geometry_msgs
   geometric_shapes
   nav2_costmap_2d
+  nav2_msgs
   nav2_voxel_grid
   octomap_msgs
   shape_msgs
