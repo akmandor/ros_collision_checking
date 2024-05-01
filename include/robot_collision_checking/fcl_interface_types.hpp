@@ -124,6 +124,7 @@ struct FCLObject
     Eigen::Affine3d object_transform;
 
     // Points to the type of FCL object
+    // TODO: Replace for std::variant in more modern C++
     union
     {
         const shape_msgs::msg::SolidPrimitive* solid;
