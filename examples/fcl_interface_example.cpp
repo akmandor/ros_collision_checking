@@ -57,8 +57,7 @@ bool initCollisionWorld(robot_collision_checking::FCLInterfaceCollisionWorld& wo
     sphere.dimensions.resize(1);
     sphere.dimensions[shape_msgs::msg::SolidPrimitive::SPHERE_RADIUS] = 0.3;
     sphere.type = shape_msgs::msg::SolidPrimitive::SPHERE;
-    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(
-        sphere, robot_collision_checking::SPHERE, eig_wTs1));
+    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(sphere, eig_wTs1));
 
     // Cylinder
     shape_msgs::msg::SolidPrimitive cylinder;
@@ -66,8 +65,7 @@ bool initCollisionWorld(robot_collision_checking::FCLInterfaceCollisionWorld& wo
     cylinder.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_HEIGHT] = 1.0;
     cylinder.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_RADIUS] = 0.1;
     cylinder.type = shape_msgs::msg::SolidPrimitive::CYLINDER;
-    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(
-        cylinder, robot_collision_checking::CYLINDER, eig_wTs2));
+    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(cylinder, eig_wTs2));
 
     // Plane Ax+By+Cz+D=0
     shape_msgs::msg::Plane plane;
@@ -176,7 +174,6 @@ int main(int argc, char **argv)
         std::vector<robot_collision_checking::FCLInterfaceCollisionObjectPtr> world_objects = collision_world.getCollisionObjects();
         std::string world_frame = collision_world.getWorldFrame();
 
-        // Ignore even shapes
         int num_objects = collision_world.getNumObjects();
         for (int i = 0; i < num_objects; /*i++*/)
         {

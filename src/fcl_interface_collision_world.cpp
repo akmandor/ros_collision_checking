@@ -208,9 +208,9 @@ bool FCLInterfaceCollisionWorld::checkCollisionObject(int obj_id, std::vector<in
             fcl::CollisionRequestd col_req;
             fcl::CollisionResultd col_result;
             fcl::collide(co.get(),
-                        fcl_collision_objects_[i]->collision_object.get(),
-                        col_req,
-                        col_result);
+                         fcl_collision_objects_[i]->collision_object.get(),
+                         col_req,
+                         col_result);
             if (col_result.isCollision())
             {
                 collision_object_ids.push_back(fcl_collision_objects_[i]->collision_id);
@@ -239,9 +239,33 @@ bool FCLInterfaceCollisionWorld::checkCollisionObject(const FCLObjectPtr& obj, s
     for (const auto& fcl_coll_obj : fcl_collision_objects_)
     {
         fcl::collide(co.get(),
-                        fcl_coll_obj->collision_object.get(),
-                        col_req,
-                        col_result);
+                     fcl_coll_obj->collision_object.get(),
+                     col_req,
+                     col_result);
+        if (col_result.isCollision())
+        {
+            collision_object_ids.push_back(fcl_coll_obj->collision_id);
+            in_collision = true;
+        }
+    }
+
+    return in_collision;
+}
+
+bool FCLInterfaceCollisionWorld::checkCollisionObject(const FCLCollisionObjectPtr& co, std::vector<int>& collision_object_ids) const
+{
+    // Clear vector of any prior entries
+    collision_object_ids.clear();
+
+    fcl::CollisionRequestd col_req;
+    fcl::CollisionResultd col_result;
+    bool in_collision(false);
+    for (const auto& fcl_coll_obj : fcl_collision_objects_)
+    {
+        fcl::collide(co.get(),
+                     fcl_coll_obj->collision_object.get(),
+                     col_req,
+                     col_result);
         if (col_result.isCollision())
         {
             collision_object_ids.push_back(fcl_coll_obj->collision_id);
@@ -287,9 +311,9 @@ void FCLInterfaceCollisionWorld::getObjectDistances(int obj_id,
             dist_result.nearest_points[1].setZero();
 
             fcl::distance(co.get(),
-                        fcl_collision_objects_[i]->collision_object.get(),
-                        dist_req,
-                        dist_result);
+                          fcl_collision_objects_[i]->collision_object.get(),
+                          dist_req,
+                          dist_result);
 
             // Iterate over 3 coordinate axes
             for (int j = 0; j < 3; j++)
@@ -303,10 +327,10 @@ void FCLInterfaceCollisionWorld::getObjectDistances(int obj_id,
     }
 }
 
-    void FCLInterfaceCollisionWorld::getObjectDistances(const FCLObjectPtr& obj,
-                                                        std::vector<double>& obj_distances,
-                                                        std::vector<Eigen::Vector3d>& closest_pt_obj,
-                                                        std::vector<Eigen::Vector3d>& closest_pt_world) const
+void FCLInterfaceCollisionWorld::getObjectDistances(const FCLObjectPtr& obj,
+                                                    std::vector<double>& obj_distances,
+                                                    std::vector<Eigen::Vector3d>& closest_pt_obj,
+                                                    std::vector<Eigen::Vector3d>& closest_pt_world) const
 {
     // Create the collision object
     FCLCollisionGeometryPtr cg = fcl_interface::createCollisionGeometry(obj);
@@ -334,9 +358,49 @@ void FCLInterfaceCollisionWorld::getObjectDistances(int obj_id,
         dist_result.nearest_points[1].setZero();
 
         fcl::distance(co.get(),
-                        fcl_collision_objects_[i]->collision_object.get(),
-                        dist_req,
-                        dist_result);
+                      fcl_collision_objects_[i]->collision_object.get(),
+                      dist_req,
+                      dist_result);
+
+        // Iterate over 3 coordinate axes
+        for (int j = 0; j < 3; j++)
+        {
+            closest_pt_obj[i](j) = dist_result.nearest_points[0][j];
+            closest_pt_world[i](j) = dist_result.nearest_points[1][j];
+        }
+
+        obj_distances[i] = dist_result.min_distance;
+    }
+}
+
+void FCLInterfaceCollisionWorld::getObjectDistances(const FCLCollisionObjectPtr& co,
+                                                    std::vector<double>& obj_distances,
+                                                    std::vector<Eigen::Vector3d>& closest_pt_obj,
+                                                    std::vector<Eigen::Vector3d>& closest_pt_world) const
+{
+    // Reset output vector variables
+    obj_distances.clear();
+    obj_distances.resize(obj_counter_);
+    closest_pt_obj.clear();
+    closest_pt_obj.resize(obj_counter_);
+    closest_pt_world.clear();
+    closest_pt_world.resize(obj_counter_);
+
+    // Compute distances over all objects in world
+    for (unsigned int i = 0; i < obj_counter_; i++)
+    {
+        fcl::DistanceRequestd dist_req;
+        dist_req.enable_nearest_points = true;
+        dist_req.gjk_solver_type = fcl::GJKSolverType::GST_LIBCCD;
+
+        fcl::DistanceResultd dist_result;
+        dist_result.nearest_points[0].setZero();
+        dist_result.nearest_points[1].setZero();
+
+        fcl::distance(co.get(),
+                      fcl_collision_objects_[i]->collision_object.get(),
+                      dist_req,
+                      dist_result);
 
         // Iterate over 3 coordinate axes
         for (int j = 0; j < 3; j++)
@@ -370,9 +434,9 @@ double FCLInterfaceCollisionWorld::getMinimumObjectDistance(int obj_id) const
             fcl::DistanceResultd dist_result;
 
             fcl::distance(co.get(),
-                            fcl_collision_objects_[i]->collision_object.get(),
-                            dist_req,
-                            dist_result);
+                          fcl_collision_objects_[i]->collision_object.get(),
+                          dist_req,
+                          dist_result);
 
             if (min_distance > dist_result.min_distance)
             {
@@ -392,6 +456,30 @@ double FCLInterfaceCollisionWorld::getMinimumObjectDistance(const FCLObjectPtr& 
     fcl_interface::transform2fcl(obj->object_transform, world_to_fcl);
     FCLCollisionObjectPtr co = std::make_shared<fcl::CollisionObjectd>(cg, world_to_fcl);
 
+    double min_distance = std::numeric_limits<double>::max();
+    for (const auto& collision_interface_obj : fcl_collision_objects_)
+    {
+        fcl::DistanceRequestd dist_req;
+        dist_req.enable_nearest_points = false;
+        dist_req.gjk_solver_type = fcl::GJKSolverType::GST_LIBCCD;
+        fcl::DistanceResultd dist_result;
+
+        fcl::distance(co.get(),
+                        collision_interface_obj->collision_object.get(),
+                        dist_req,
+                        dist_result);
+
+        if (min_distance > dist_result.min_distance)
+        {
+            min_distance = dist_result.min_distance;
+        }
+    }
+
+    return min_distance;
+}
+
+double FCLInterfaceCollisionWorld::getMinimumObjectDistance(const FCLCollisionObjectPtr& co) const
+{
     double min_distance = std::numeric_limits<double>::max();
     for (const auto& collision_interface_obj : fcl_collision_objects_)
     {

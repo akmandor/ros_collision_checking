@@ -32,9 +32,27 @@ enum ShapeType
 // FCL Object is simply a container for object information
 struct FCLObject
 {
-    FCLObject(const shape_msgs::msg::SolidPrimitive& solid, ShapeType type, const Eigen::Affine3d& transform) 
-        : object_type(type), object_transform(transform)
+    FCLObject(const shape_msgs::msg::SolidPrimitive& solid, const Eigen::Affine3d& transform) 
+        : object_transform(transform)
     {
+        if (solid.type == shape_msgs::msg::SolidPrimitive::SPHERE)
+        {
+            object_type = SPHERE;
+        }
+        else if (solid.type == shape_msgs::msg::SolidPrimitive::BOX)
+        {
+            object_type = BOX;
+        }
+        else if (solid.type == shape_msgs::msg::SolidPrimitive::CONE)
+        {
+            object_type = CONE;
+        }
+        else 
+        {
+            // Should be a cylinder
+            object_type = CYLINDER;
+        }
+
         ptr.solid = new shape_msgs::msg::SolidPrimitive(solid);
     }
 
