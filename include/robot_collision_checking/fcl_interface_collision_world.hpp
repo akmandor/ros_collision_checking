@@ -33,6 +33,7 @@ class FCLInterfaceCollisionWorld
         // Returns true if in collision and a list of colliding objects
         bool checkCollisionObject(int obj_id, std::vector<int>& collision_object_ids) const;
         bool checkCollisionObject(const FCLObjectPtr& obj, std::vector<int>& collision_object_ids) const;
+        bool checkCollisionObject(const FCLCollisionObjectPtr& co, std::vector<int>& collision_object_ids) const;
 
         /** Gets the distances from an FCL object (with an ID or not) in the known world
          * Returns:
@@ -47,10 +48,15 @@ class FCLInterfaceCollisionWorld
                                 std::vector<double>& obj_distances,
                                 std::vector<Eigen::Vector3d>& closest_pt_obj,
                                 std::vector<Eigen::Vector3d>& closest_pt_world) const;
+        void getObjectDistances(const FCLCollisionObjectPtr& co,
+                                std::vector<double>& obj_distances,
+                                std::vector<Eigen::Vector3d>& closest_pt_obj,
+                                std::vector<Eigen::Vector3d>& closest_pt_world) const;
 
         // Get the minimum distance between an FCL object and the known world
         double getMinimumObjectDistance(int obj_id) const;
         double getMinimumObjectDistance(const FCLObjectPtr& obj) const;
+        double getMinimumObjectDistance(const FCLCollisionObjectPtr& co) const;
 
         inline std::string getWorldFrame() const
         {
@@ -66,6 +72,7 @@ class FCLInterfaceCollisionWorld
         {
             return obj_counter_;
         }
+        
     private:
         // Collision world frame. All shapes and subframes are defined relative to this frame.
         std::string frame_;

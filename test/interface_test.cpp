@@ -58,8 +58,7 @@ TEST(FCLInterface, AddRemove)
     sphere.dimensions[shape_msgs::msg::SolidPrimitive::SPHERE_RADIUS] = 0.3;
     sphere.type = shape_msgs::msg::SolidPrimitive::SPHERE;
 
-    robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere, robot_collision_checking::SPHERE, eig_wTs);
+    robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(sphere, eig_wTs);
     bool success = collision_world.addCollisionObject(fcl_sphere, 0);
 
     ASSERT_EQ(collision_world.getNumObjects(), 1);
@@ -72,8 +71,7 @@ TEST(FCLInterface, AddRemove)
     box.dimensions[shape_msgs::msg::SolidPrimitive::BOX_Y] = 0.2;
     box.dimensions[shape_msgs::msg::SolidPrimitive::BOX_Z] = 0.2;
     box.type = shape_msgs::msg::SolidPrimitive::BOX;
-    robot_collision_checking::FCLObjectPtr fcl_box = std::make_shared<robot_collision_checking::FCLObject>(
-        box, robot_collision_checking::BOX, eig_wTs);
+    robot_collision_checking::FCLObjectPtr fcl_box = std::make_shared<robot_collision_checking::FCLObject>(box, eig_wTs);
 
     success = collision_world.addCollisionObject(fcl_box, 0);
 
@@ -102,8 +100,7 @@ TEST(FCLInterface, AddRemove)
     cylinder.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_HEIGHT] = 1.0;
     cylinder.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_RADIUS] = 0.1;
     cylinder.type = shape_msgs::msg::SolidPrimitive::CYLINDER;
-    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(
-        cylinder, robot_collision_checking::CYLINDER, eig_wTs));
+    fcl_objects.push_back(std::make_shared<robot_collision_checking::FCLObject>(cylinder, eig_wTs));
 
     // Plane
     shape_msgs::msg::Plane plane;
@@ -301,16 +298,11 @@ TEST(FCLInterface, CollisionCheck)
     box2.type = shape_msgs::msg::SolidPrimitive::BOX;
 
     // Convert to FCL interface objects
-    robot_collision_checking::FCLObjectPtr fcl_sphere1 = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere1, robot_collision_checking::SPHERE, eig_wTs1);
-    robot_collision_checking::FCLObjectPtr fcl_sphere2 = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere2, robot_collision_checking::SPHERE, eig_wTs2);
-    robot_collision_checking::FCLObjectPtr fcl_box1 = std::make_shared<robot_collision_checking::FCLObject>(
-        box1, robot_collision_checking::BOX, eig_wTs3);
-    robot_collision_checking::FCLObjectPtr fcl_cylinder1 = std::make_shared<robot_collision_checking::FCLObject>(
-        cylinder1, robot_collision_checking::CYLINDER, eig_wTs4);
-    robot_collision_checking::FCLObjectPtr fcl_box2 = std::make_shared<robot_collision_checking::FCLObject>(
-        box2, robot_collision_checking::BOX, eig_wTs5);
+    robot_collision_checking::FCLObjectPtr fcl_sphere1 = std::make_shared<robot_collision_checking::FCLObject>(sphere1, eig_wTs1);
+    robot_collision_checking::FCLObjectPtr fcl_sphere2 = std::make_shared<robot_collision_checking::FCLObject>(sphere2, eig_wTs2);
+    robot_collision_checking::FCLObjectPtr fcl_box1 = std::make_shared<robot_collision_checking::FCLObject>(box1, eig_wTs3);
+    robot_collision_checking::FCLObjectPtr fcl_cylinder1 = std::make_shared<robot_collision_checking::FCLObject>(cylinder1, eig_wTs4);
+    robot_collision_checking::FCLObjectPtr fcl_box2 = std::make_shared<robot_collision_checking::FCLObject>(box2, eig_wTs5);
 
     // Collision checks
     fcl::CollisionRequestd request;
@@ -443,16 +435,11 @@ TEST(FCLInterface, DistanceCheck)
     box2.type = shape_msgs::msg::SolidPrimitive::BOX;
 
     // Convert to FCL interface objects
-    robot_collision_checking::FCLObjectPtr fcl_sphere1 = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere1, robot_collision_checking::SPHERE, eig_wTs1);
-    robot_collision_checking::FCLObjectPtr fcl_sphere2 = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere2, robot_collision_checking::SPHERE, eig_wTs2);
-    robot_collision_checking::FCLObjectPtr fcl_box1 = std::make_shared<robot_collision_checking::FCLObject>(
-        box1, robot_collision_checking::BOX, eig_wTs3);
-    robot_collision_checking::FCLObjectPtr fcl_cylinder1 = std::make_shared<robot_collision_checking::FCLObject>(
-        cylinder1, robot_collision_checking::CYLINDER, eig_wTs4);
-    robot_collision_checking::FCLObjectPtr fcl_box2 = std::make_shared<robot_collision_checking::FCLObject>(
-        box2, robot_collision_checking::BOX, eig_wTs5);
+    robot_collision_checking::FCLObjectPtr fcl_sphere1 = std::make_shared<robot_collision_checking::FCLObject>(sphere1, eig_wTs1);
+    robot_collision_checking::FCLObjectPtr fcl_sphere2 = std::make_shared<robot_collision_checking::FCLObject>(sphere2, eig_wTs2);
+    robot_collision_checking::FCLObjectPtr fcl_box1 = std::make_shared<robot_collision_checking::FCLObject>(box1, eig_wTs3);
+    robot_collision_checking::FCLObjectPtr fcl_cylinder1 = std::make_shared<robot_collision_checking::FCLObject>(cylinder1, eig_wTs4);
+    robot_collision_checking::FCLObjectPtr fcl_box2 = std::make_shared<robot_collision_checking::FCLObject>(box2, eig_wTs5);
 
     // Distance checks
     fcl::DistanceRequestd request;
@@ -503,8 +490,7 @@ TEST(FCLInterface, OctomapCollDistCheck)
     sphere.dimensions[shape_msgs::msg::SolidPrimitive::SPHERE_RADIUS] = 0.3;
     sphere.type = shape_msgs::msg::SolidPrimitive::SPHERE;
 
-    robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere, robot_collision_checking::SPHERE, eig_wTs);
+    robot_collision_checking::FCLObjectPtr fcl_sphere = std::make_shared<robot_collision_checking::FCLObject>(sphere, eig_wTs);
 
     // Octomap
     octomap_msgs::msg::Octomap octomap;
@@ -532,8 +518,7 @@ TEST(FCLInterface, OctomapCollDistCheck)
     eig_wTs_new.linear() = Eigen::Matrix3d::Identity();
     eig_wTs_new.translation() = eig_wps_new;
 
-    robot_collision_checking::FCLObjectPtr fcl_sphere_new = std::make_shared<robot_collision_checking::FCLObject>(
-        sphere, robot_collision_checking::SPHERE, eig_wTs_new);
+    robot_collision_checking::FCLObjectPtr fcl_sphere_new = std::make_shared<robot_collision_checking::FCLObject>(sphere, eig_wTs_new);
 
     // Successfully compute distance between Octomap and shape_msgs type
     double new_dist = robot_collision_checking::fcl_interface::getDistanceObjects(fcl_sphere_new, fcl_octomap);

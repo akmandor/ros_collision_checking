@@ -33,9 +33,11 @@ FCLCollisionGeometryPtr createCollisionGeometry(const octomap_msgs::msg::Octomap
 // Check the collision between an FCL object and a given world
 // Returns the number of collisions if any
 int checkCollisionObjectWorld(const FCLObjectPtr& obj, const FCLInterfaceCollisionWorld& world);
+int checkCollisionObjectWorld(const FCLCollisionObjectPtr& co, const FCLInterfaceCollisionWorld& world);
 
 // Check if two FCL objects are in collision
 bool checkCollisionObjects(const FCLObjectPtr& obj1, const FCLObjectPtr& obj2);
+bool checkCollisionObjects(const FCLCollisionObjectPtr& co1, const FCLCollisionObjectPtr& co2);
 
 /** Gets the distances from an FCL object to a given world
  * Returns:
@@ -43,23 +45,34 @@ bool checkCollisionObjects(const FCLObjectPtr& obj1, const FCLObjectPtr& obj2);
  *    2. closest_pt_object a vector of points (len = nbr of objects) on object closest to the given world
  *    3. closest_pt_world a vector of points (len = nbr of objects) on given world closest to the object */
 void getObjectDistancesWorld(const FCLObjectPtr& obj,
-                            const FCLInterfaceCollisionWorld& world,
-                            std::vector<double>& obj_distances,
-                            std::vector<Eigen::Vector3d>& closest_pt_obj,
-                            std::vector<Eigen::Vector3d>& closest_pt_world);
+                             const FCLInterfaceCollisionWorld& world,
+                             std::vector<double>& obj_distances,
+                             std::vector<Eigen::Vector3d>& closest_pt_obj,
+                             std::vector<Eigen::Vector3d>& closest_pt_world);
+void getObjectDistancesWorld(const FCLCollisionObjectPtr& co,
+                             const FCLInterfaceCollisionWorld& world,
+                             std::vector<double>& obj_distances,
+                             std::vector<Eigen::Vector3d>& closest_pt_obj,
+                             std::vector<Eigen::Vector3d>& closest_pt_world);
 
 // Returns the minimum distance between two FCL objects
 double getDistanceObjects(const FCLObjectPtr& obj1, const FCLObjectPtr& obj2);
+double getDistanceObjects(const FCLCollisionObjectPtr& co1, const FCLCollisionObjectPtr& co2);
 
 /** Returns the minimum distance between two FCL objects
  * Also returns the position w.r.t to world frame of the closest points */
 double getDistanceObjects(const FCLObjectPtr& obj1,
-                        const FCLObjectPtr& obj2,
-                        Eigen::Vector3d& closest_pt_obj1,
-                        Eigen::Vector3d& closest_pt_obj2);
+                          const FCLObjectPtr& obj2,
+                          Eigen::Vector3d& closest_pt_obj1,
+                          Eigen::Vector3d& closest_pt_obj2);
+double getDistanceObjects(const FCLCollisionObjectPtr& co1,
+                          const FCLCollisionObjectPtr& co2,
+                          Eigen::Vector3d& closest_pt_obj1,
+                          Eigen::Vector3d& closest_pt_obj2);
 
 // Get the minimum distance between an FCL object and a given world
 double getMinimumObjectDistanceWorld(const FCLObjectPtr& obj, const FCLInterfaceCollisionWorld& world);
+double getMinimumObjectDistanceWorld(const FCLCollisionObjectPtr& co, const FCLInterfaceCollisionWorld& world);
 
 // Type conversion methods
 void convertGeometryPoseEigenTransform(const geometry_msgs::msg::Pose& geo_pose, Eigen::Affine3d& wTt);
