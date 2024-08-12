@@ -32,18 +32,16 @@ bibliography: paper.bib
 # Summary
 This paper presents `robot_collision_checking`, a C++ library that creates an easy interface to the flexible collision library (FCL) [@Pan2012FCL] The package allows users to access collision and distance checking functionalities of FCL directly through a Robot Operating System (ROS) interface [@Quigley2009ROS],  given that the robotics community widely relies on ROS as the standard for software development. We include ROS 1 and ROS 2 [@Macenski2022ROS2] implementations of the core C++ library.
 
-Collisions and distances can be calculated between  collision objects such as solid primitives (spheres, box, cylinder), planes, meshes, voxel grids and octrees (via the Octomap library (FCL) [@hornung13auro]. Collision worlds, containing multiple collision objecst can be created and maintained enabling collision distance checks between single objects and entire collision worlds. 
+Collisions and distances can be calculated between  collision objects such as solid primitives (spheres, box, cylinder), planes, meshes, voxel grids and octrees (via the Octomap library (FCL) [@hornung13auro]. Collision worlds, containing multiple collision objects can be created and maintained enabling collision distance checks between single objects and entire collision worlds. The package includes an example of ROS integration and visualisation of the results.  
 
 
 
 # Statement of Need
-Collision checking is becoming an increasingly important tools as robots are deployed to unstructured and dynamic environments. Thi
+Collision checking is becoming an increasingly important tools as robots are deployed to unstructured and dynamic environments, while ROS 1 and ROS 2 provide the most popular means of controlling robots for research applications. ROS 1 and ROS 2 enable collision checking via the popular path planning and trajectory execution open-source software Moveit [@coleman2014reducing]. Moveit collision checking api can avail two different collision checkers [bullet](https://github.com/bulletphysics/bullet3) and FCL. However, to avail of this functionality users have to install Moveit and ensure that their robot has a Moveit accessible package. Moreover, while Moveit is extremely powerful to access the lower level functionalities like collision distance checking requires an in-depth knowledge of the package structure and hierarchy. Similarly Pinochhio [@carpentier:hal-03271811] a powerful robot modeling software is also built upon FCL but suffers from the same overhead as Moveit.  
+This package aims to address this need by providing a lightweight and transparent wrapper for the FCL library and ROS. 
 
-Sentence about Moveit [@coleman2014reducing]
+Simiar to this package [Python-fcl](https://github.com/BerkeleyAutomation/python-fcl) provides a python wrapper for FCL which could also be used for a ROS interface but is based on python rather than C++. [ros_collision_checking](https://github.com/CoFra-CaLa/ros_collision_detection) provides a collision checking system for 2D vehicles in a ROS environment. 
 
-Sentence about FCL
-
-Sentence about other packages
 
 # Acknowledgements
 
