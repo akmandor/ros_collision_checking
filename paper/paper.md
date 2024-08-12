@@ -37,7 +37,13 @@ Collisions and distances can be calculated between  collision objects such as so
 
 
 # Statement of Need
+Collision checking is becoming an increasingly important tools as robots are deployed to unstructured and dynamic environments. Thi
 
+Sentence about Moveit [@coleman2014reducing]
+
+Sentence about FCL
+
+Sentence about other packages
 
 # Acknowledgements
 
