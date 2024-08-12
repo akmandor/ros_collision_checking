@@ -1,5 +1,5 @@
 ---
-title: 'robot_collision_checking': A lightweight wrapper to enable access to FCL (flexible collision library) via ROS and ROS 2'
+title: 'robot_collision_checking: A lightweight wrapper to enable access to FCL (flexible collision library) via ROS and ROS 2'
 tags:
   - ros
   - robotics
