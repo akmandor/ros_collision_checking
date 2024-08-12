@@ -32,7 +32,7 @@ bibliography: paper.bib
 # Summary
 This paper presents `robot_collision_checking`, a C++ library that creates an easy interface to the flexible collision library (FCL) [@Pan2012FCL] The package allows users to access collision and distance checking functionalities of FCL directly through a Robot Operating System (ROS) interface [@Quigley2009ROS],  given that the robotics community widely relies on ROS as the standard for software development. We include ROS 1 and ROS 2 [@Macenski2022ROS2] implementations of the core C++ library.
 
-Collisions and distances can be calculated between solid primitives (spheres, box, cylinder), planes, meshes, voxel grids and octrees (via the Octomap library (FCL) [@hornung13auro] 
+Collisions and distances can be calculated between  collision objects such as solid primitives (spheres, box, cylinder), planes, meshes, voxel grids and octrees (via the Octomap library (FCL) [@hornung13auro]. Collision worlds, containing multiple collision objecst can be created and maintained enabling collision distance checks between single objects and entire collision worlds. 
 
 
 
