@@ -34,6 +34,8 @@ This paper presents `robot_collision_checking`, a C++ library that creates an ea
 
 Collisions and distances can be calculated between  collision objects such as solid primitives (spheres, box, cylinder), planes, meshes, voxel grids and octrees (via the Octomap library (FCL) [@hornung13auro]. Collision worlds, containing multiple collision objects can be created and maintained enabling collision distance checks between single objects and entire collision worlds. The package includes an example of ROS integration and visualisation of the results.  
 
+The `robot_collision_checking` library is currently being used by the `constrained_manipulability` by the same authors. Within this package there are examples of using `robot_collision_checking` with urdf files and collision meshes to calculate collision/distances between a robot and primitives and octomaps.   
+
 
 
 # Statement of Need
