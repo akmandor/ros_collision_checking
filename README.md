@@ -44,3 +44,11 @@ And then examine the results:
 ```
 colcon test-result --all --verbose
 ```
+
+## Example Program
+
+This repository contains an example program, which can be run as follows:
+```
+ros2 run robot_collision_checking fcl_interface_example
+```
+In this example node, a collision world that consists of a variety of ROS 2 collision objects (meshes, planes, voxel grids, etc.) is created and maintained. The example code also demonstrates how to perform collision-checking on the objects in this world, as well as visualize them in RViz2 if desired (using `visualization_msgs/Marker` messages).
