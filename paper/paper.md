@@ -1,5 +1,5 @@
 ---
-title: 'robot_collision_checking: A lightweight wrapper to enable access to FCL (flexible collision library) via ROS and ROS 2'
+title: 'robot_collision_checking: A Lightweight ROS 2 Interface to FCL (Flexible Collision Library)'
 tags:
   - ros
   - robotics
@@ -25,7 +25,7 @@ affiliations:
    index: 2
  - name: Amazon Robotics, USA
    index: 3
-date: 13 August 2024
+date: 14 August 2024
 bibliography: paper.bib
 ---
 
@@ -42,6 +42,8 @@ Collision-checking is an increasingly important tool as robots are deployed into
 Our package is similar to [Python-fcl](https://github.com/BerkeleyAutomation/python-fcl), which provides a Python binding of FCL that could also be used in a ROS architecture. The key difference is that our implementation is written in C++. The [ros_collision_checking](https://github.com/CoFra-CaLa/ros_collision_detection) package also offers a collision-checking system for 2D vehicles in a ROS environment. Our collision-checking system instead extends the general capabilities of FCL for proximity querying any geometric model and can thus be applied in numerous robotics contexts.
 
 # Acknowledgements
+Mark Zolotas is currently at Toyota Research Institute (TRI), Cambridge, MA, USA. This paper describes work performed at Northeastern University and is not associated with TRI.
+
 Taskin Padir holds concurrent appointments as a Professor of Electrical and Computer Engineering at Northeastern University and as an Amazon Scholar. This paper describes work performed at Northeastern University and is not associated with Amazon.
 
 # References
