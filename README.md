@@ -6,7 +6,8 @@ The package can be utilised to perform distance and collision checking of object
 
 This package requires:
  * [FCL](https://github.com/flexible-collision-library/fcl) version **0.7.0**
- * [libccd](https://github.com/danfis/libccd) 
+ * [libccd](https://github.com/danfis/libccd)
+ * [Octomap](https://octomap.github.io/) 
 
 ## Installation
 
@@ -18,20 +19,29 @@ Please ensure this option is enabled, when compiling:
 >> -DENABLE_DOUBLE_PRECISION=ON
 
 1. git clone https://github.com/danfis/libccd.git
-2. mkdir build && cd build
+2. cd libccd && mkdir build && cd build
 3. cmake -G "Unix Makefiles" -DENABLE_DOUBLE_PRECISION=ON ..
 4. make
 5. sudo make install
 
 ### FCL
 
+**Important:** Before installing FCL, make sure to have `liboctomap-dev` installed, as FCL will ignore building `OcTree` collision geometries otherwise. 
+
 1. git clone https://github.com/flexible-collision-library/fcl.git
-2. mkdir build && cd build
+2. cd fcl && mkdir build && cd build
 3. cmake ..
 4. make
 5. sudo make install
 
 If there are errors, such as constants not being found, then you are probably still using the older version of FCL.
+
+### Other Dependencies
+
+Don't forget to also install any system dependencies through `rosdep` after installing the above libraries, e.g., in the root directory of your ROS workspace run:
+```
+rosdep install --from-paths src --ignore-src -y
+```
 
 ## Testing
 
