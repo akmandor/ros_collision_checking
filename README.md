@@ -91,7 +91,7 @@ The output of the example node prints information about any objects currently in
 
 While this example only contains static objects, the package also works with dynamic objects. 
 
-A more extenstive use-case of this package is provided in [constrained_manipulability](https://github.com/philip-long/constrained_manipulability).
+A more extensive use-case of this package is provided in [constrained_manipulability](https://github.com/philip-long/constrained_manipulability).
 Here, the `robot_collision_checking` interface checks for collisions and distances between environmental objects and a robot manipulator (based on the geometric shapes
 present in its URDF model). 
 
