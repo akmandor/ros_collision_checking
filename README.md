@@ -2,8 +2,7 @@
 
 A lightweight package to use FCL with ROS messages that is heavily inspired by [MoveIt's version](https://moveit.ros.org/documentation/concepts/developer_concepts/).  
 
-The `robot_collision_checking` package can be utilised to perform distance and collision checking of objects by creating a class and maintaining a collision world, 
-or by using utility functions that are free of any class. This package can handle objects represented as [shape_msgs](http://wiki.ros.org/shape_msgs), 
+The `robot_collision_checking` package can be utilised to perform distance and collision checking of objects by creating and maintaining a collision world and/or by using utility functions (see the [API Documentation](docs/api.md) for more information). This package can handle objects represented as [shape_msgs](http://wiki.ros.org/shape_msgs), 
 [OctoMaps](https://github.com/OctoMap/octomap_msgs), and [VoxelGrids](https://github.com/ros-planning/navigation2/blob/main/nav2_msgs/msg/VoxelGrid.msg).
 
 Depending on which git branch is used, implementations for the following ROS distros are available:
