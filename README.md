@@ -82,16 +82,16 @@ ros2 run robot_collision_checking fcl_interface_example
 Separately run an instance of `rviz2` and set the global fixed frame to "world" to visualize the collision world.
 
 Within this ROS node, a few key pieces of functionality are provided:
-- First, the `initCollisionWorld()` method demonstrates how a collision world composed of different geometric shapes and types can be constructed
-using the package's interface.
-- Second, the main publishing loop indicates how these different geometric types can be translated into [Markers](https://wiki.ros.org/rviz/DisplayTypes/Marker) 
-for visualization in RViz.
-- Finally, the example shows how a created collision world can be used to check for collisions and distances between its constituent objects. 
+- First, the `initCollisionWorld()` method demonstrates how a collision world composed of different geometric shapes and types (meshes, planes, voxel grids, etc.) can be constructed
+and maintained using the package's interface.
+- Second, the main publishing loop indicates how these different geometric types can be translated into [visualization_msgs/Marker](https://wiki.ros.org/rviz/DisplayTypes/Marker) 
+messages for visualization in RViz.
+- Finally, the example shows how the created collision world can be used to check for collisions and distances between its constituent objects. 
 The output of the example node prints information about any objects currently in collision.
 
 While this example only contains static objects, the package also works with dynamic objects. 
 
-A more extenstive use-case of this package is provided in [constrained_manipulability](https://github.com/philip-long/constrained_manipulability).
+A more extensive use-case of this package is provided in [constrained_manipulability](https://github.com/philip-long/constrained_manipulability).
 Here, the `robot_collision_checking` interface checks for collisions and distances between environmental objects and a robot manipulator (based on the geometric shapes
 present in its URDF model). 
 
