@@ -54,11 +54,20 @@ sudo make install
 
 If there are errors, such as constants not being found, then you are probably still using the older version of FCL.
 
-### Other Dependencies
+### Workspace Setup
 
-Don't forget to also install any system dependencies through `rosdep` after installing the above libraries, e.g., in the root directory of your ROS workspace run:
+You can now clone the `robot_collision_checking` repository in your ROS workspace (set to the appropriate `$ROS_DISTRO` branch). Don't forget to install 
+any other system dependencies through `rosdep` after installing the above libraries, e.g., in the root directory of your ROS workspace run:
 ```
 rosdep install --from-paths src --ignore-src -y
+```
+
+## Alternative - Docker Image
+
+If you instead wish to explore the package in a Docker image, there is a `Dockerfile` available. Simply clone the repository or download the `Dockerfile` and
+then run:
+```
+docker build --tag 'robot_collision_checking' . && docker run -it 'robot_collision_checking' bash
 ```
 
 ## Testing
@@ -79,7 +88,10 @@ A toy example is provided in the `examples` directory and can be run as follows:
 ```
 ros2 run robot_collision_checking fcl_interface_example
 ```
-Separately run an instance of `rviz2` and set the global fixed frame to "world" to visualize the collision world.
+Separately run an instance of `rviz2` and set the global fixed frame to "world" to visualize the collision world. You can install `rviz2` on Debian systems by running:
+```
+sudo apt install ros-$ROS_DISTRO-rviz2
+```
 
 Within this ROS node, a few key pieces of functionality are provided:
 - First, the `initCollisionWorld()` method demonstrates how a collision world composed of different geometric shapes and types (meshes, planes, voxel grids, etc.) can be constructed
