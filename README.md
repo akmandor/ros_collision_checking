@@ -97,7 +97,7 @@ And then examine the results:
 colcon test-result --all --verbose
 ```
 
-There are six tests implemented in `test/interface_test.cpp`:
+There are six tests implemented in [interface_test.cpp](test/interface_test.cpp):
 1. **TransformToFCL:** To validate the `Eigen::Affine3d` to `fcl::Transform3d` transformation method.
 2. **AddRemove:** Asserts that a variety of [shape_msgs](http://wiki.ros.org/shape_msgs) and 
 [OctoMaps](https://github.com/OctoMap/octomap_msgs) can be added/removed to a collision world.

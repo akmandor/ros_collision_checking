@@ -1,7 +1,7 @@
 # C++ API Documentation
 
 The following describes the `robot_collision_checking` ROS package's C++ API for managing and checking collisions 
-between various object types in a robot environment, using the Flexible Collision Library (FCL). We break this documentation down into
+between various object types in a robot environment, using the Flexible Collision Library (FCL). We break this documentation down into:
 
 1) [Types](#types)
 2) [Core Functionality](#core-functionality)
@@ -108,7 +108,21 @@ struct FCLInterfaceCollisionObject
 
 typedef std::shared_ptr<FCLInterfaceCollisionObject> FCLInterfaceCollisionObjectPtr;
 ```
-This struct provides the glue between our container for different ROS message types, `FCLObject`, and object types suitable collision and distance checking using FCL, `fcl::CollisionObjectd`.
+This struct provides the glue between our container for different ROS message types, `FCLObject`, and object types suitable collision and distance checking using FCL, `fcl::CollisionObjectd`. 
+
+To create an `FCLInterfaceCollisionObject`, an `FCLObjectPtr`, an `FCLCollisionObjectPtr`, and an object ID are required. For instance, given a pointer variable `obj` of type `FCLObjectPtr`, an integer `object_id`, and the utility method `fcl_interface::createCollisionGeometry` described in the [fcl_interface section](#fcl_interface), an `FCLInterfaceCollisionObject` can be constructed as follows:
+```c++
+// Obtain the collision geometry for FCLObjectPtr `obj`
+FCLCollisionGeometryPtr cg = fcl_interface::createCollisionGeometry(obj);
+// Convert the Eigen Affine3D transform to an FCL coordinate transform
+fcl::Transform3d world_to_fcl;
+fcl_interface::transform2fcl(obj->object_transform, world_to_fcl);
+// Construct an FCLCollisionObjectPtr from the object's corresponding collision geometry and FCL transform
+FCLCollisionObjectPtr co = std::make_shared<fcl::CollisionObjectd>(cg, world_to_fcl);
+
+// Create an FCLInterfaceCollisionObjectPtr from the FCLObjectPtr, FCLCollisionObjectPtr, and a given `object_id`
+FCLInterfaceCollisionObjectPtr new_col_object = std::make_shared<FCLInterfaceCollisionObject>(obj, co, object_id);
+```
 
 ## Core Functionality
 
@@ -117,7 +131,7 @@ The package can be used by instantiating a collision world, `FCLInterfaceCollisi
 
 ### FCLInterfaceCollisionWorld
 
-The `FCLInterfaceCollisionWorld` class is a container and manager for the objects in a collision world, providing functionality to 
+The `FCLInterfaceCollisionWorld` class is a container and manager for objects in a collision world, providing functionality to 
 add, remove, and check collisions between objects. Its state is encapsulated by the following private members:
 ```c++
 std::string frame_;  // Collision world reference frame
@@ -183,11 +197,12 @@ See [interface_test.cpp](../test/interface_test.cpp) and [fcl_interface_example.
 
 ### fcl_interface
 
-The `robot_collision_checking::fcl_interface` methods declared in [fcl_interface.hpp](../include/robot_collision_checking/fcl_interface.hpp) expose much of the same functionality as `FCLInterfaceCollisionWorld` in terms of checking for collisions, calculating distances between objects, and identifying the closest points on objects. However, no collision world is maintained. Instead these calculations are performed on FCL objects without a specified world, assuming the objects are in the same reference frame, e.g.,:
+The `robot_collision_checking::fcl_interface` methods declared in [fcl_interface.hpp](../include/robot_collision_checking/fcl_interface.hpp) expose much of the same functionality as `FCLInterfaceCollisionWorld` in terms of checking for collisions, calculating distances between objects, and identifying the closest points on objects. However, no collision world is maintained. Instead these calculations are performed on FCL objects without a specified world, e.g.,:
 ```c++
 bool checkCollisionObjects(const FCLObjectPtr& obj1, const FCLObjectPtr& obj2);
-bool checkCollisionObjects(const FCLCollisionObjectPtr& co1, const FCLCollisionObjectPtr& co2);
+double getDistanceObjects(const FCLCollisionObjectPtr& co1, const FCLCollisionObjectPtr& co2);
 ```
+An assumption when performing these calculations on objects detached from a collision world is that the objects are posed in a common frame of reference. This common frame is typically the "world" frame.
 
 Likewise, an FCL object can also be compared against a given world:
 ```c++
@@ -209,5 +224,43 @@ There are also other convenience functions to convert ROS or standard types to a
 // Create collision FCL geometries from specific ROS msgs
 FCLCollisionGeometryPtr createCollisionGeometry(const FCLObjectPtr& obj);
 ```
+For instance, if the `obj` type is a `shape_msgs::msg::SolidPrimitive` then the above method is implemented as:
+```c++
+FCLCollisionGeometryPtr createCollisionGeometry(const shape_msgs::msg::SolidPrimitive& solid)
+{
+    if (solid.type == shape_msgs::msg::SolidPrimitive::SPHERE)
+    {
+        return std::make_shared<fcl::Sphered>(solid.dimensions[shape_msgs::msg::SolidPrimitive::SPHERE_RADIUS]);
+    }
+    else if (solid.type == shape_msgs::msg::SolidPrimitive::BOX)
+    {
+        return std::make_shared<fcl::Boxd>(solid.dimensions[shape_msgs::msg::SolidPrimitive::BOX_X],
+                                           solid.dimensions[shape_msgs::msg::SolidPrimitive::BOX_Y],
+                                           solid.dimensions[shape_msgs::msg::SolidPrimitive::BOX_Z]);
+    }
+    else if (solid.type == shape_msgs::msg::SolidPrimitive::CONE)
+    {
+        return std::make_shared<fcl::Coned>(solid.dimensions[shape_msgs::msg::SolidPrimitive::CONE_RADIUS],
+                                            solid.dimensions[shape_msgs::msg::SolidPrimitive::CONE_HEIGHT]);
+    }
+    else if (solid.type == shape_msgs::msg::SolidPrimitive::CYLINDER)
+    {
+        return std::make_shared<fcl::Cylinderd>(solid.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_RADIUS],
+                                                solid.dimensions[shape_msgs::msg::SolidPrimitive::CYLINDER_HEIGHT]);
+    }
+    else
+    {
+        RCLCPP_ERROR(getLogger(), "NOT a valid solid primitive type");
+        return nullptr;
+    }
+}
+```
 
-Refer to the [interface_test.cpp](../test/interface_test.cpp) test code for example usage of the methods defined in the `robot_collision_checking::fcl_interface` namespace.
+Refer to the [interface_test.cpp](../test/interface_test.cpp) test code for example usage of the methods defined in the `robot_collision_checking::fcl_interface` namespace. There are six tests implemented:
+1. **TransformToFCL:** To validate the `Eigen::Affine3d` to `fcl::Transform3d` transformation method.
+2. **AddRemove:** Asserts that a variety of [shape_msgs](http://wiki.ros.org/shape_msgs) and 
+[OctoMaps](https://github.com/OctoMap/octomap_msgs) can be added/removed to a collision world (e.g., adding a sphere shape to a collision world).
+3. **AddRemoveVoxelGrid:** Same as "AddRemove", except focused on [VoxelGrids](https://github.com/ros-planning/navigation2/blob/main/nav2_msgs/msg/VoxelGrid.msg).
+4. **CollisionCheck**: Validates that FCL collision-checking capabilities operate correctly for ROS types exposed through this package (e.g., testing a collision between a box and sphere in the same coordinate frame).
+5. **DistanceCheck**: Validates that FCL distance computations are correct for ROS types exposed through this package (e.g., testing the distance calculations between different object geometries are correct).
+6. **OctomapCollDistCheck**: A combination of tests for FCL collision and distance checking when using `robot_collision_checking` as an interface to handle OctoMaps as collision geometries.
