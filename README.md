@@ -97,16 +97,17 @@ And then examine the results:
 colcon test-result --all --verbose
 ```
 
-There are six tests implemented in [interface_test.cpp](test/interface_test.cpp):
+There are seven tests implemented in [interface_test.cpp](test/interface_test.cpp):
 1. **TransformToFCL:** To validate the `Eigen::Affine3d` to `fcl::Transform3d` transformation method.
 2. **AddRemove:** Asserts that a variety of [shape_msgs](http://wiki.ros.org/shape_msgs) and 
 [OctoMaps](https://github.com/OctoMap/octomap_msgs) can be added/removed to a collision world.
 3. **AddRemoveVoxelGrid:** Same as "AddRemove", except focused on [VoxelGrids](https://github.com/ros-planning/navigation2/blob/main/nav2_msgs/msg/VoxelGrid.msg).
-4. **CollisionCheck**: Validates that FCL collision-checking capabilities operate correctly for ROS types exposed through this package (e.g., `shape_msgs`).
-5. **DistanceCheck**: Validates that FCL distance computations are correct for ROS types exposed through this package (e.g., `shape_msgs`).
-6. **OctomapCollDistCheck**: A combination of tests for FCL collision and distance checking when using `robot_collision_checking` as an interface to handle OctoMaps as collision geometries.
+4. **NullPtrCheck**: Tests whether the library handles `nullptr` function arguments correctly.
+5. **CollisionCheck**: Validates that FCL collision-checking capabilities operate correctly for ROS types exposed through this package (e.g., `shape_msgs`).
+6. **DistanceCheck**: Validates that FCL distance computations are correct for ROS types exposed through this package (e.g., `shape_msgs`).
+7. **OctomapCollDistCheck**: A combination of tests for FCL collision and distance checking when using `robot_collision_checking` as an interface to handle OctoMaps as collision geometries.
 
-If all six tests pass, you can expect minimal output with a summary of "0 failures". If there are any errors, `test-result` will provide a detailed breakdown of the test(s) that failed and reason why in the terminal output. A test results file will also be stored in the `build/robot_collision_checking` directory of your ROS workspace (unless configured otherwise -- see [ROS tutorial docs](https://docs.ros.org/en/humble/Tutorials/Intermediate/Testing/CLI.html)).
+If all seven tests pass, you can expect minimal output with a summary of "0 failures". If there are any errors, `test-result` will provide a detailed breakdown of the test(s) that failed and reason why in the terminal output. A test results file will also be stored in the `build/robot_collision_checking` directory of your ROS workspace (unless configured otherwise -- see [ROS tutorial docs](https://docs.ros.org/en/humble/Tutorials/Intermediate/Testing/CLI.html)).
 
 ## Examples
 

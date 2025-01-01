@@ -5,6 +5,8 @@ between various object types in a robot environment, using the Flexible Collisio
 
 1) [Types](#types)
 2) [Core Functionality](#core-functionality)
+3) [Error Handling](#error-handling)
+4) [Testing](#testing)
 
 ## Types 
 
@@ -134,9 +136,12 @@ The package can be used by instantiating a collision world, `FCLInterfaceCollisi
 The `FCLInterfaceCollisionWorld` class is a container and manager for objects in a collision world, providing functionality to 
 add, remove, and check collisions between objects. Its state is encapsulated by the following private members:
 ```c++
-std::string frame_;  // Collision world reference frame
-std::vector<FCLInterfaceCollisionObjectPtr> fcl_collision_objects_;  // List of collision objects in the world
-unsigned int obj_counter_;  // Counter for object IDs
+// Collision world reference frame
+std::string frame_;
+// List of collision objects in the world
+std::vector<FCLInterfaceCollisionObjectPtr> fcl_collision_objects_;
+// Counter for object IDs
+unsigned int obj_counter_;
 ```
 There are getter methods to expose these members.
 
@@ -256,11 +261,25 @@ FCLCollisionGeometryPtr createCollisionGeometry(const shape_msgs::msg::SolidPrim
 }
 ```
 
-Refer to the [interface_test.cpp](../test/interface_test.cpp) test code for example usage of the methods defined in the `robot_collision_checking::fcl_interface` namespace. There are six tests implemented:
+Refer to the [interface_test.cpp](../test/interface_test.cpp) test code for example usage of the methods defined in the `robot_collision_checking::fcl_interface` namespace.
+
+## Error Handling
+
+Errors in `robot_collision_checking` are handled by outputting an `RCLCPP_ERROR` message in the format: **"function_name: error_message"**. Depending on the function where the error occurs, there will also be specific return values, e.g.,:
+- Functions with `bool` return types (e.g., `addCollisionObject`), will return `false` on an error.
+- Functions with `int` or `double` as return types (e.g., `getMinimumObjectDistance`), will return `-1` or `-1.0`, respectively.
+- `void` functions (e.g., `getObjectDistances`) with an error detected will immediately return from the function.
+- Functions with pointer return types, like `FCLCollisionGeometryPtr` (e.g., for `createCollisionGeometry`), will return `nullptr` values on an error.
+
+## Testing
+
+There are seven tests implemented in [interface_test.cpp](../test/interface_test.cpp):
 1. **TransformToFCL:** To validate the `Eigen::Affine3d` to `fcl::Transform3d` transformation method.
 2. **AddRemove:** Asserts that a variety of [shape_msgs](http://wiki.ros.org/shape_msgs) and 
 [OctoMaps](https://github.com/OctoMap/octomap_msgs) can be added/removed to a collision world (e.g., adding a sphere shape to a collision world).
 3. **AddRemoveVoxelGrid:** Same as "AddRemove", except focused on [VoxelGrids](https://github.com/ros-planning/navigation2/blob/main/nav2_msgs/msg/VoxelGrid.msg).
-4. **CollisionCheck**: Validates that FCL collision-checking capabilities operate correctly for ROS types exposed through this package (e.g., testing a collision between a box and sphere in the same coordinate frame).
-5. **DistanceCheck**: Validates that FCL distance computations are correct for ROS types exposed through this package (e.g., testing the distance calculations between different object geometries are correct).
-6. **OctomapCollDistCheck**: A combination of tests for FCL collision and distance checking when using `robot_collision_checking` as an interface to handle OctoMaps as collision geometries.
+4. **NullPtrCheck**: Validates that the library outputs error messages for `nullptr` function arguments (e.g., if `nullptr` is passed to `addCollisionObject`).
+5. **CollisionCheck**: Validates that FCL collision-checking capabilities operate correctly for ROS types exposed through this package (e.g., testing a collision between a box and sphere in the same coordinate frame).
+6. **DistanceCheck**: Validates that FCL distance computations are correct for ROS types exposed through this package (e.g., testing the distance calculations between different object geometries are correct).
+7. **OctomapCollDistCheck**: A combination of tests for FCL collision and distance checking when using `robot_collision_checking` as an interface to handle OctoMaps as collision geometries.
+

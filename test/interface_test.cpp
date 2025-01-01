@@ -220,6 +220,38 @@ TEST(FCLInterface, AddRemoveVoxelGrid)
     ASSERT_TRUE(success);
 }
 
+TEST(FCLInterface, NullPtrCheck)
+{
+    robot_collision_checking::FCLInterfaceCollisionWorld collision_world;
+
+    robot_collision_checking::FCLObjectPtr null_obj = nullptr;
+    bool success = collision_world.addCollisionObject(null_obj, -1);
+    ASSERT_FALSE(success);
+
+    std::vector<int> collision_object_ids;
+    bool is_collision = collision_world.checkCollisionObject(null_obj, collision_object_ids);
+    ASSERT_FALSE(is_collision);
+
+    std::vector<double> obj_distances;
+    std::vector<Eigen::Vector3d> closest_pt_obj;
+    std::vector<Eigen::Vector3d> closest_pt_world;
+    collision_world.getObjectDistances(null_obj, obj_distances, closest_pt_obj, closest_pt_world);
+    ASSERT_EQ(obj_distances.size(), 0);
+
+    double min_dist = collision_world.getMinimumObjectDistance(null_obj);
+    ASSERT_EQ(min_dist, -1.0);
+
+    robot_collision_checking::FCLObjectPtr null_obj2 = nullptr;
+    is_collision = robot_collision_checking::fcl_interface::checkCollisionObjects(null_obj, null_obj2);
+    ASSERT_FALSE(is_collision);
+
+    robot_collision_checking::FCLCollisionGeometryPtr cg = robot_collision_checking::fcl_interface::createCollisionGeometry(null_obj);
+    ASSERT_EQ(cg, nullptr);
+
+    min_dist = robot_collision_checking::fcl_interface::getMinimumObjectDistanceWorld(null_obj, collision_world);
+    ASSERT_EQ(min_dist, -1.0);
+}
+
 TEST(FCLInterface, CollisionCheck)
 {
     // Create some Eigen transforms in the world frame
