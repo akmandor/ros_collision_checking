@@ -62,7 +62,7 @@ bool FCLInterfaceCollisionWorld::addCollisionObjects(const std::vector<FCLObject
     // Check same number of objects and IDs
     if (objects.size() != object_ids.size())
     {
-        RCLCPP_ERROR(getLogger(), "Not the same # of objects and associated IDs");
+        RCLCPP_ERROR(getLogger(), "addCollisionObjects: Not the same # of objects and associated IDs");
         return false;
     }
 
@@ -77,9 +77,15 @@ bool FCLInterfaceCollisionWorld::addCollisionObjects(const std::vector<FCLObject
 
 bool FCLInterfaceCollisionWorld::addCollisionObject(const FCLObjectPtr& obj, int object_id)
 {
+    if (obj == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "addCollisionObject: called with a NULL FCLObjectPtr.");
+        return false;
+    }
+
     if (collisionObjectExists(object_id))
     {
-        RCLCPP_INFO(getLogger(), "Object with ID %d already exists!", object_id);
+        RCLCPP_INFO(getLogger(), "addCollisionObject: Object with ID %d already exists!", object_id);
         return false;
     }
 
@@ -116,7 +122,7 @@ bool FCLInterfaceCollisionWorld::addCollisionObject(const FCLObjectPtr& obj, int
                 for (uint32_t z_grid = 0; z_grid < z_size; ++z_grid)
                 {
                     nav2_voxel_grid::VoxelStatus status = nav2_voxel_grid::VoxelGrid::getVoxel(x_grid, y_grid, z_grid,
-                                                                                                x_size, y_size, z_size, data);
+                                                                                               x_size, y_size, z_size, data);
                     if (status == nav2_voxel_grid::MARKED)
                     {
                         // Center point of the cell
@@ -193,7 +199,8 @@ bool FCLInterfaceCollisionWorld::checkCollisionObject(int obj_id, std::vector<in
     int index;
     if (!collisionObjectExists(obj_id, index))
     {
-        RCLCPP_ERROR(getLogger(), "No object with ID %d in the world", obj_id);
+        RCLCPP_ERROR(getLogger(), "checkCollisionObject: No object with ID %d in the world", obj_id);
+        return false;
     }
     FCLCollisionObjectPtr co = fcl_collision_objects_[index]->collision_object;
     
@@ -224,6 +231,12 @@ bool FCLInterfaceCollisionWorld::checkCollisionObject(int obj_id, std::vector<in
 
 bool FCLInterfaceCollisionWorld::checkCollisionObject(const FCLObjectPtr& obj, std::vector<int>& collision_object_ids) const
 {
+    if (obj == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "checkCollisionObject: called with a NULL FCLObjectPtr.");
+        return false;
+    }
+
     // Create the collision object
     FCLCollisionGeometryPtr cg = fcl_interface::createCollisionGeometry(obj);
     fcl::Transform3d world_to_fcl;
@@ -254,6 +267,12 @@ bool FCLInterfaceCollisionWorld::checkCollisionObject(const FCLObjectPtr& obj, s
 
 bool FCLInterfaceCollisionWorld::checkCollisionObject(const FCLCollisionObjectPtr& co, std::vector<int>& collision_object_ids) const
 {
+    if (co == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "checkCollisionObject: called with a NULL FCLCollisionObjectPtr.");
+        return false;
+    }
+
     // Clear vector of any prior entries
     collision_object_ids.clear();
 
@@ -285,7 +304,8 @@ void FCLInterfaceCollisionWorld::getObjectDistances(int obj_id,
     int index;
     if (!collisionObjectExists(obj_id, index))
     {
-        RCLCPP_ERROR(getLogger(), "No object with ID %d in the world", obj_id);
+        RCLCPP_ERROR(getLogger(), "getObjectDistances: No object with ID %d in the world", obj_id);
+        return;
     }
     FCLCollisionObjectPtr co = fcl_collision_objects_[index]->collision_object;
 
@@ -332,6 +352,12 @@ void FCLInterfaceCollisionWorld::getObjectDistances(const FCLObjectPtr& obj,
                                                     std::vector<Eigen::Vector3d>& closest_pt_obj,
                                                     std::vector<Eigen::Vector3d>& closest_pt_world) const
 {
+    if (obj == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "getObjectDistances: called with a NULL FCLObjectPtr.");
+        return;
+    }
+
     // Create the collision object
     FCLCollisionGeometryPtr cg = fcl_interface::createCollisionGeometry(obj);
     fcl::Transform3d world_to_fcl;
@@ -378,6 +404,12 @@ void FCLInterfaceCollisionWorld::getObjectDistances(const FCLCollisionObjectPtr&
                                                     std::vector<Eigen::Vector3d>& closest_pt_obj,
                                                     std::vector<Eigen::Vector3d>& closest_pt_world) const
 {
+    if (co == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "getObjectDistances: called with a NULL FCLCollisionObjectPtr.");
+        return;
+    }
+
     // Reset output vector variables
     obj_distances.clear();
     obj_distances.resize(obj_counter_);
@@ -419,7 +451,8 @@ double FCLInterfaceCollisionWorld::getMinimumObjectDistance(int obj_id) const
     int index;
     if (!collisionObjectExists(obj_id, index))
     {
-        RCLCPP_ERROR(getLogger(), "No object with ID %d in the world", obj_id);
+        RCLCPP_ERROR(getLogger(), "getMinimumObjectDistance: No object with ID %d in the world", obj_id);
+        return -1.0;
     }
     FCLCollisionObjectPtr co = fcl_collision_objects_[index]->collision_object;
 
@@ -450,6 +483,12 @@ double FCLInterfaceCollisionWorld::getMinimumObjectDistance(int obj_id) const
 
 double FCLInterfaceCollisionWorld::getMinimumObjectDistance(const FCLObjectPtr& obj) const
 {
+    if (obj == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "getMinimumObjectDistance: called with a NULL FCLObjectPtr.");
+        return -1.0;
+    }
+
     // Create the collision object
     FCLCollisionGeometryPtr cg = fcl_interface::createCollisionGeometry(obj);
     fcl::Transform3d world_to_fcl;
@@ -480,6 +519,12 @@ double FCLInterfaceCollisionWorld::getMinimumObjectDistance(const FCLObjectPtr& 
 
 double FCLInterfaceCollisionWorld::getMinimumObjectDistance(const FCLCollisionObjectPtr& co) const
 {
+    if (co == nullptr)
+    {
+        RCLCPP_ERROR(getLogger(), "getMinimumObjectDistance: called with a NULL FCLCollisionObjectPtr.");
+        return -1.0;
+    }
+
     double min_distance = std::numeric_limits<double>::max();
     for (const auto& collision_interface_obj : fcl_collision_objects_)
     {
