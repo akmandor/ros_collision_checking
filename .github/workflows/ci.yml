@@ -11,9 +11,11 @@ defaults:
     shell: bash
 
 jobs:
-  build:
+  build_container:
+    name: Prepare and build ROS 2 Humble container for tests
     runs-on: ubuntu-22.04
-
+    outputs:
+      image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -29,9 +31,14 @@ jobs:
           push: true
           tags: ros2-ci:latest
 
+  test_package:
+    name: Test robot_collision_checking packages
+    runs-on: ubuntu-22.04
+    needs: build_container
+    container:
+      image: ${{ needs.prepare_container.outputs.image }}
+    steps:
       - name: Run tests
-        uses: docker/run-action@v2
-        with:
-          image: ros2-ci:latest
-          entrypoint: /bin/bash
-          args: -c "source install/setup.bash && colcon test"
+        run: |
+          source install/setup.bash
+          colcon test --packages-select robot_collision_checking
