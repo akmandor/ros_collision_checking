@@ -10,10 +10,6 @@ defaults:
   run:
     shell: bash
 
-concurrency:
-  group: ${{ github.repository }}-${{ github.workflow }}-${{ github.ref }}-${{ github.ref == 'refs/heads/main' && github.sha || ''}}
-  cancel-in-progress: true
-
 jobs:
   build:
     runs-on: ubuntu-22.04
@@ -30,10 +26,8 @@ jobs:
         with:
           context: .
           file: Dockerfile
-          push: false
+          push: true
           tags: ros2-ci:latest
-          build-args: 
-            - ROS_DISTRO=humble
 
       - name: Run tests
         uses: docker/run-action@v2
