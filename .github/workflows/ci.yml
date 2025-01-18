@@ -11,34 +11,33 @@ defaults:
     shell: bash
 
 jobs:
-  build_container:
-    name: Prepare and build ROS 2 Humble container for tests
+  build_and_test:
+    name: Build and Test ROS 2 Humble robot_collision_checking package
     runs-on: ubuntu-22.04
-    outputs:
-      image: ${{ fromJSON(steps.meta.outputs.json).tags[0] }}
     steps:
-      - name: Checkout
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Setup Docker Buildx
+      - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v1
 
-      - name: Build and test Docker image
-        uses: docker/build-push-action@v5  # https://github.com/docker/build-push-action
+      - name: Build Docker Image
+        uses: docker/build-push-action@v5
         with:
           context: .
           file: Dockerfile
-          push: true
-          tags: ros2-ci:latest
+          push: false # Do not push to registry
+          tags: test-image:latest # Use a local tag for the image
+          load: true # Load the image into the local Docker daemon
 
-  test_package:
-    name: Test robot_collision_checking packages
-    runs-on: ubuntu-22.04
-    needs: build_container
-    container:
-      image: ${{ needs.prepare_container.outputs.image }}
-    steps:
-      - name: Run tests
+      - name: Run Container
         run: |
-          source install/setup.bash
-          colcon test --packages-select robot_collision_checking
+          docker run --rm test-image:latest echo "Docker image built successfully!"
+
+      - name: Run robot_collision_checking Tests
+        run: |
+          docker run --rm -v ${{ github.workspace }}:/ros2_ws test-image:latest bash -c "
+            cd /ros2_ws && colcon build --symlink-install && \
+            source /ros2_ws/install/setup.bash && \
+            colcon test --packages-select robot_collision_checking && \
+            colcon test-result --all --verbose"
