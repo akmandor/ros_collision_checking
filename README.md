@@ -1,5 +1,8 @@
 # Robot Collision Checking for ROS
 
+[![DOI](https://joss.theoj.org/papers/10.21105/joss.07473/status.svg)](https://doi.org/10.21105/joss.07473)
+[![CI](https://github.com/philip-long/robot_collision_checking/actions/workflows/ci.yml/badge.svg)](https://github.com/philip-long/robot_collision_checking/actions/workflows/ci.yml)
+
 A ROS package that wraps around [FCL](https://github.com/flexible-collision-library/fcl), a popular library in robotics for collision detection and proximity computation. This repository is inspired by [MoveIt's approach](https://moveit.ros.org/documentation/concepts/developer_concepts/) to interfacing ROS with FCL. However, `robot_collision_checking` is a lightweight alternative that does not require the entirety of a motion planning framework, like MoveIt, to expose FCL's collision and distance checking capabilities to ROS messages/types. 
 
 The `robot_collision_checking` package can be utilised to perform distance and collision checking of objects by creating and maintaining a collision world and/or by using utility functions (see the [API Documentation](docs/api.md) for more information). This package can handle objects represented as [shape_msgs](http://wiki.ros.org/shape_msgs), 
