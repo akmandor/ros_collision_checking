@@ -1,0 +1,44 @@
+cff-version: "1.2.0"
+authors:
+- family-names: Zolotas
+  given-names: Mark
+  orcid: "https://orcid.org/0000-0002-7672-940X"
+- family-names: Long
+  given-names: Philip
+  orcid: "https://orcid.org/0000-0002-0784-8720"
+- family-names: Padir
+  given-names: Taskin
+  orcid: "https://orcid.org/0000-0001-5123-5801"
+contact:
+- family-names: Zolotas
+  given-names: Mark
+  orcid: "https://orcid.org/0000-0002-7672-940X"
+doi: 10.5281/zenodo.14736597
+message: If you use this software, please cite our article in the
+  Journal of Open Source Software.
+preferred-citation:
+  authors:
+  - family-names: Zolotas
+    given-names: Mark
+    orcid: "https://orcid.org/0000-0002-7672-940X"
+  - family-names: Long
+    given-names: Philip
+    orcid: "https://orcid.org/0000-0002-0784-8720"
+  - family-names: Padir
+    given-names: Taskin
+    orcid: "https://orcid.org/0000-0001-5123-5801"
+  date-published: 2025-01-27
+  doi: 10.21105/joss.07473
+  issn: 2475-9066
+  issue: 105
+  journal: Journal of Open Source Software
+  publisher:
+    name: Open Journals
+  start: 7473
+  title: "robot_collision_checking: A Lightweight ROS 2 Interface to FCL
+    (Flexible Collision Library)"
+  type: article
+  url: "https://joss.theoj.org/papers/10.21105/joss.07473"
+  volume: 10
+title: "robot_collision_checking: A Lightweight ROS 2 Interface to FCL
+  (Flexible Collision Library)"
